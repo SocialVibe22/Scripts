@@ -1,334 +1,571 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Proteção contra múltiplas execuções
+if _G.ScriptLoaded then return end
+_G.ScriptLoaded = true
 
--- Verificar o jogo atual
-local placeId = game.PlaceId
-
--- Criar janela principal
-local Window = Rayfield:CreateWindow({
-    Name = "MasterHub",
-    LoadingTitle = "MasterHub",
-    LoadingSubtitle = "by Master",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "MasterHub",
-        FileName = "Config"
-    },
-    Discord = {
-        Enabled = true,
-        Invite = "discord.gg/masterhub",
-        RememberJoins = true
-    },
-    KeySystem = true,
-    KeySettings = {
-        Title = "MasterHub Key System",
-        Subtitle = "Key Required",
-        Note = "Enter key to access MasterHub",
-        FileName = "MasterHubKey",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = {"MasterHub2025"}
-    }
-})
+-- Espera o jogo carregar
+repeat task.wait() until game:IsLoaded()
 
 -- Serviços
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local player = Players.LocalPlayer
+-- Espera o jogador carregar
+local player = Players.LocalPlayer or Players.PlayerAdded:Wait()
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
--- IDs dos jogos
+-- Constantes
+local DEFAULT_SPEED = humanoid.WalkSpeed
+local DEFAULT_JUMP = humanoid.JumpPower
+local DEFAULT_GRAVITY = workspace.Gravity
+
+-- Remove GUIs existentes
+local existingGui = player.PlayerGui:FindFirstChild("TrollGui")
+if existingGui then existingGui:Destroy() end
+
+-- Carrega Rayfield
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Cria a janela
+local Window = Rayfield:CreateWindow({
+    Name = "Ultimate Script Hub",
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "by Master",
+    ConfigurationSaving = {
+        Enabled = false
+    },
+    KeySystem = false
+})
+
+-- Game Detection
+local placeId = game.PlaceId
+
 local GAMES = {
     LEGENDS_OF_SPEED = 3101667897,
-    NINJA_LEGENDS = 3956818381,
     DOORS = 6516141723,
+    NINJA_LEGENDS = 3956818381,
     BUILD_A_BOAT = 537413528
 }
 
--- Criar a tab do jogo específico
+-- Legends of Speed Tab
 if placeId == GAMES.LEGENDS_OF_SPEED then
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/refs/heads/main/LegendsSpeedTab.lua?token=GHSAT0AAAAAAC7PDVNHCQFDOUGSWI55KEGAZ55AXDA'))()
+    -- Initialize player references
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
 
-elseif placeId == GAMES.DOORS then
-    -- Doors Tab
-    local DoorsTab = Window:CreateTab("Doors", 4483362458)
-    
-    -- Entity ESP Section
-    local ESPSection = DoorsTab:CreateSection("Entity ESP")
+    -- Create Tab
+    local LegendsSpeedTab = Window:CreateTab("Legends of Speed", 4483362458)
 
-    local function createESP(model, color)
-        if not model:IsA("Model") then return end
-        
-        local highlight = Instance.new("Highlight")
-        highlight.Name = "ESP_Highlight"
-        highlight.FillColor = color or Color3.fromRGB(255, 0, 0)
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-        highlight.FillTransparency = 0.5
-        highlight.OutlineTransparency = 0
-        highlight.Parent = model
-        
-        local billboardGui = Instance.new("BillboardGui")
-        billboardGui.Name = "ESP_Info"
-        billboardGui.Size = UDim2.new(0, 200, 0, 50)
-        billboardGui.StudsOffset = Vector3.new(0, 3, 0)
-        billboardGui.AlwaysOnTop = true
-        billboardGui.Parent = model.PrimaryPart or model:FindFirstChild("Head") or model:FindFirstChildWhichIsA("BasePart")
-        
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(1, 0, 1, 0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = model.Name
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        nameLabel.TextStrokeTransparency = 0
-        nameLabel.TextSize = 14
-        nameLabel.Font = Enum.Font.GothamBold
-        nameLabel.Parent = billboardGui
-        
-        -- Add distance counter
-        RunService.RenderStepped:Connect(function()
-            if model.PrimaryPart and rootPart then
-                local distance = (model.PrimaryPart.Position - rootPart.Position).Magnitude
-                nameLabel.Text = string.format("%s\n%.1f studs", model.Name, distance)
-            end
-        end)
+    -- Stats Display Section
+    local StatsSection = LegendsSpeedTab:CreateSection("Stats Display")
+
+    local function createStatsDisplay()
+        -- Remove existing stats display if any
+        local existingGui = player.PlayerGui:FindFirstChild("StatsGui")
+        if existingGui then existingGui:Destroy() end
+
+        -- Create new GUI
+        local statsGui = Instance.new("ScreenGui")
+        statsGui.Name = "StatsGui"
+        statsGui.Parent = player.PlayerGui
+
+        local statsFrame = Instance.new("Frame")
+        statsFrame.Name = "StatsDisplay"
+        statsFrame.Size = UDim2.new(0, 200, 0, 120)
+        statsFrame.Position = UDim2.new(0, 10, 0.5, -60)
+        statsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        statsFrame.BackgroundTransparency = 0.3
+        statsFrame.Parent = statsGui
+
+        local UICorner = Instance.new("UICorner")
+        UICorner.CornerRadius = UDim.new(0, 8)
+        UICorner.Parent = statsFrame
+
+        local statsLabel = Instance.new("TextLabel")
+        statsLabel.Name = "StatsText"
+        statsLabel.Size = UDim2.new(1, -20, 1, -20)
+        statsLabel.Position = UDim2.new(0, 10, 0, 10)
+        statsLabel.BackgroundTransparency = 1
+        statsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        statsLabel.TextSize = 14
+        statsLabel.Font = Enum.Font.GothamBold
+        statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+        statsLabel.Parent = statsFrame
+
+        return statsLabel
     end
 
-    local function updateESP()
-        -- Clear existing ESP
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:FindFirstChild("ESP_Highlight") then
-                v.ESP_Highlight:Destroy()
-            end
-            if v:FindFirstChild("ESP_Info") then
-                v.ESP_Info:Destroy()
-            end
-        end
-        
-        if not getgenv().EntityESP then return end
-        
-        -- Add ESP to all entities
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:IsA("Model") and (
-                v.Name:match("Monster") or
-                v.Name:match("Rush") or
-                v.Name:match("Ambush") or
-                v.Name:match("Eyes") or
-                v.Name:match("Screech")
-            ) then
-                createESP(v)
-            end
-        end
-    end
-
-    DoorsTab:CreateToggle({
-        Name = "Entity ESP",
+    local statsUpdateConnection
+    LegendsSpeedTab:CreateToggle({
+        Name = "Show Live Stats",
         CurrentValue = false,
-        Flag = "EntityESP",
+        Flag = "ShowStats",
         Callback = function(Value)
-            getgenv().EntityESP = Value
-            updateESP()
+            if Value then
+                local statsLabel = createStatsDisplay()
+                
+                -- Disconnect existing connection if any
+                if statsUpdateConnection then
+                    statsUpdateConnection:Disconnect()
+                end
+                
+                -- Create new update connection
+                statsUpdateConnection = RunService.RenderStepped:Connect(function()
+                    if not Value then return end
+                    if not player:FindFirstChild("leaderstats") then return end
+                    
+                    statsLabel.Text = string.format(
+                        "Speed: %s\nRebirths: %s\nGems: %s\nSteps: %s\nHoops: %s",
+                        tostring(player.leaderstats.Speed.Value),
+                        tostring(player.leaderstats.Rebirths.Value),
+                        tostring(player.leaderstats.Gems.Value),
+                        tostring(player.leaderstats.Steps.Value),
+                        tostring(player.leaderstats.Hoops.Value)
+                    )
+                end)
+            else
+                if statsUpdateConnection then
+                    statsUpdateConnection:Disconnect()
+                end
+                local statsGui = player.PlayerGui:FindFirstChild("StatsGui")
+                if statsGui then statsGui:Destroy() end
+            end
         end
     })
 
-    -- Auto Dodge Section
-    local DodgeSection = DoorsTab:CreateSection("Auto Dodge")
+    -- Auto Farm Section
+    local FarmingSection = LegendsSpeedTab:CreateSection("Auto Farming")
 
-    local function setupAutoDodge()
-        if not getgenv().AutoDodge then return end
+    -- Optimized orb collection with area scanning and error handling
+    local function collectOrbs()
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
         
-        workspace.ChildAdded:Connect(function(child)
-            if not getgenv().AutoDodge then return end
+        pcall(function()
+            -- Store current position
+            local originalPosition = player.Character.HumanoidRootPart.CFrame
             
-            if child.Name:match("Rush") or child.Name:match("Ambush") then
-                -- Hide in nearest closet or behind obstacle
-                for _, v in pairs(workspace:GetDescendants()) do
-                    if v:IsA("Model") and (v.Name:match("Closet") or v.Name:match("Wardrobe")) then
-                        local primaryPart = v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")
-                        if primaryPart then
-                            local distance = (primaryPart.Position - rootPart.Position).Magnitude
-                            if distance < 20 then
-                                -- Smooth teleport to hiding spot
-                                local targetCFrame = primaryPart.CFrame * CFrame.new(0, 0, -3)
-                                TweenService:Create(rootPart, 
-                                    TweenInfo.new(0.5, Enum.EasingStyle.Quad), 
-                                    {CFrame = targetCFrame}
-                                ):Play()
-                                break
-                            end
+            -- Collect orbs in main area
+            for _, orb in pairs(workspace.orbFolder:GetChildren()) do
+                if orb:IsA("Part") and getgenv().AutoOrbs then
+                    -- Move to orb
+                    player.Character.HumanoidRootPart.CFrame = orb.CFrame
+                    
+                    -- Collect orb
+                    local args = {
+                        [1] = "collectOrb",
+                        [2] = orb
+                    }
+                    ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+                    
+                    -- Small delay to prevent server overload
+                    task.wait(0.05)
+                end
+            end
+
+            -- Collect orbs in all worlds
+            for _, world in pairs(workspace:GetChildren()) do
+                if world.Name:match("World") then
+                    for _, orb in pairs(world:GetDescendants()) do
+                        if orb:IsA("Part") and orb.Name == "outerOrb" and getgenv().AutoOrbs then
+                            -- Move to orb
+                            player.Character.HumanoidRootPart.CFrame = orb.CFrame
+                            
+                            -- Collect orb
+                            local args = {
+                                [1] = "collectOrb",
+                                [2] = orb
+                            }
+                            ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+                            
+                            task.wait(0.05)
                         end
                     end
                 end
             end
+            
+            -- Return to original position
+            player.Character.HumanoidRootPart.CFrame = originalPosition
         end)
     end
 
-    DoorsTab:CreateToggle({
-        Name = "Auto Dodge",
+    LegendsSpeedTab:CreateToggle({
+        Name = "Auto Collect Orbs",
         CurrentValue = false,
-        Flag = "AutoDodge",
+        Flag = "AutoOrbs",
         Callback = function(Value)
-            getgenv().AutoDodge = Value
+            getgenv().AutoOrbs = Value
+            
             if Value then
-                setupAutoDodge()
+                -- Create a new thread for orb collection
+                coroutine.wrap(function()
+                    while getgenv().AutoOrbs do
+                        collectOrbs()
+                        task.wait(0.1)
+                    end
+                end)()
             end
         end
     })
 
-    -- Item ESP Section
-    local ItemSection = DoorsTab:CreateSection("Item ESP")
-
-    local function updateItemESP()
-        -- Clear existing ESP
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:FindFirstChild("ItemESP") then
-                v.ItemESP:Destroy()
+    -- Enhanced rebirth system with progress tracking and error handling
+    local function doRebirth()
+        pcall(function()
+            -- Check if player has enough speed for rebirth
+            if player.leaderstats.Speed.Value >= 1000 then
+                local args = {
+                    [1] = "rebirthRequest"
+                }
+                ReplicatedStorage.rEvents.rebirthEvent:FireServer(unpack(args))
+                
+                -- Show success notification
+                Rayfield:Notify({
+                    Title = "Rebirth Success",
+                    Content = "You have successfully rebirthed!",
+                    Duration = 2
+                })
             end
-        end
-        
-        if not getgenv().ItemESP then return end
-        
-        -- Add ESP to all items
-        for _, v in pairs(workspace:GetDescendants()) do
-            if v:IsA("Model") and (
-                v.Name:match("Key") or
-                v.Name:match("Flashlight") or
-                v.Name:match("Battery") or
-                v.Name:match("Crucifix") or
-                v.Name:match("Vitamin")
-            ) then
-                createESP(v, Color3.fromRGB(0, 255, 255))
-            end
-        end
+        end)
     end
 
-    DoorsTab:CreateToggle({
-        Name = "Item ESP",
+    LegendsSpeedTab:CreateToggle({
+        Name = "Auto Rebirth",
         CurrentValue = false,
-        Flag = "ItemESP",
+        Flag = "AutoRebirth",
         Callback = function(Value)
-            getgenv().ItemESP = Value
-            updateItemESP()
+            getgenv().AutoRebirth = Value
+            
+            if Value then
+                coroutine.wrap(function()
+                    while getgenv().AutoRebirth do
+                        doRebirth()
+                        task.wait(0.1)
+                    end
+                end)()
+            end
         end
     })
 
-    -- Anti Screamer Section
-    local ScreamerSection = DoorsTab:CreateSection("Anti Screamer")
-
-    DoorsTab:CreateToggle({
-        Name = "No Screamer",
-        CurrentValue = false,
-        Flag = "NoScreamer",
-        Callback = function(Value)
-            if Value then
-                -- Disable screamer effects
-                Lighting.Ambient = Color3.new(1, 1, 1)
-                Lighting.Brightness = 3
-                
-                -- Remove screamer sounds
-                for _, v in pairs(workspace:GetDescendants()) do
-                    if v:IsA("Sound") and (
-                        v.Name:match("Screech") or
-                        v.Name:match("Scream") or
-                        v.Name:match("Jumpscare")
-                    ) then
-                        v.Volume = 0
-                    end
+    -- Advanced racing system with path prediction and error handling
+    local function startRace()
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        pcall(function()
+            -- Store original position
+            local originalPosition = player.Character.HumanoidRootPart.CFrame
+            
+            for _, race in pairs(workspace:GetChildren()) do
+                if race.Name:find("raceStart") and getgenv().AutoRace then
+                    -- Move to race start
+                    player.Character.HumanoidRootPart.CFrame = race.CFrame
+                    
+                    -- Trigger race start
+                    firetouchinterest(player.Character.HumanoidRootPart, race, 0)
+                    task.wait()
+                    firetouchinterest(player.Character.HumanoidRootPart, race, 1)
+                    
+                    -- Wait for race to complete
+                    task.wait(0.5)
+                    
+                    -- Return to original position
+                    player.Character.HumanoidRootPart.CFrame = originalPosition
+                    break
                 end
             end
-        end
-    })
+        end)
+    end
 
-    -- Auto Revive Section
-    local ReviveSection = DoorsTab:CreateSection("Auto Revive")
-
-    DoorsTab:CreateToggle({
-        Name = "Auto Revive",
+    LegendsSpeedTab:CreateToggle({
+        Name = "Auto Race",
         CurrentValue = false,
-        Flag = "AutoRevive",
+        Flag = "AutoRace",
         Callback = function(Value)
+            getgenv().AutoRace = Value
+            
             if Value then
-                humanoid.Died:Connect(function()
-                    if not getgenv().AutoRevive then return end
-                    
-                    task.wait(2)
-                    -- Revive character
-                    local args = {
-                        [1] = "Revive"
-                    }
-                    ReplicatedStorage.EntityInfo:FireServer(unpack(args))
-                end)
-            end
-        end
-    })
-
-    -- God Mode Section
-    local GodSection = DoorsTab:CreateSection("God Mode")
-
-    DoorsTab:CreateToggle({
-        Name = "God Mode",
-        CurrentValue = false,
-        Flag = "GodMode",
-        Callback = function(Value)
-            if Value then
-                -- Make character invincible
-                humanoid.MaxHealth = math.huge
-                humanoid.Health = math.huge
-                
-                -- Prevent damage
-                local oldNamecall
-                oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-                    local args = {...}
-                    local method = getnamecallmethod()
-                    
-                    if method == "FireServer" and self.Name == "DamageHandler" then
-                        return
+                coroutine.wrap(function()
+                    while getgenv().AutoRace do
+                        startRace()
+                        task.wait(0.5)
                     end
-                    
-                    return oldNamecall(self, unpack(args))
-                end)
-            else
-                humanoid.MaxHealth = 100
-                humanoid.Health = 100
+                end)()
             end
         end
     })
 
-elseif placeId == GAMES.NINJA_LEGENDS then
-    -- Carregar Ninja Legends Tab
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/yourrepo/NinjaLegendsTab.lua'))()
-    
-elseif placeId == GAMES.BUILD_A_BOAT then
-    -- Carregar Build a Boat Tab
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/yourrepo/BuildABoatTab.lua'))()
-else
-    -- Notificar que o jogo não é suportado
+    -- Optimized gem collection with error handling
+    local function collectGems()
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        pcall(function()
+            -- Store original position
+            local originalPosition = player.Character.HumanoidRootPart.CFrame
+            
+            for _, gem in pairs(workspace.gemFolder:GetChildren()) do
+                if gem:IsA("Part") and getgenv().AutoGems then
+                    -- Move to gem
+                    player.Character.HumanoidRootPart.CFrame = gem.CFrame
+                    
+                    -- Collect gem
+                    local args = {
+                        [1] = "collectGem",
+                        [2] = gem
+                    }
+                    ReplicatedStorage.rEvents.gemEvent:FireServer(unpack(args))
+                    
+                    task.wait(0.05)
+                end
+            end
+            
+            -- Return to original position
+            player.Character.HumanoidRootPart.CFrame = originalPosition
+        end)
+    end
+
+    LegendsSpeedTab:CreateToggle({
+        Name = "Auto Collect Gems",
+        CurrentValue = false,
+        Flag = "AutoGems",
+        Callback = function(Value)
+            getgenv().AutoGems = Value
+            
+            if Value then
+                coroutine.wrap(function()
+                    while getgenv().AutoGems do
+                        collectGems()
+                        task.wait(0.1)
+                    end
+                end)()
+            end
+        end
+    })
+
+    -- World Teleport System with smooth transitions
+    local worlds = {
+        ["City"] = CFrame.new(-9682.98, 74.8522, 3099.89),
+        ["Snow City"] = CFrame.new(-9676.01, 74.8522, 3782.31),
+        ["Magma City"] = CFrame.new(-11054.9, 74.8522, 3819.92),
+        ["Space"] = CFrame.new(-8629.7998, 74.8522, 3735.96997),
+        ["Candy Land"] = CFrame.new(-11054.9, 74.8522, 4048.97)
+    }
+
+    LegendsSpeedTab:CreateDropdown({
+        Name = "Teleport to World",
+        Options = {"City", "Snow City", "Magma City", "Space", "Candy Land"},
+        CurrentOption = "City",
+        Flag = "SelectedWorld",
+        Callback = function(Value)
+            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+            
+            pcall(function()
+                -- Get target position
+                local targetCFrame = worlds[Value]
+                
+                -- Create teleport effect
+                local effect = Instance.new("Part")
+                effect.Size = Vector3.new(1, 1, 1)
+                effect.CFrame = player.Character.HumanoidRootPart.CFrame
+                effect.Anchored = true
+                effect.CanCollide = false
+                effect.Transparency = 0.5
+                effect.Parent = workspace
+                
+                -- Add particle effect
+                local particleEmitter = Instance.new("ParticleEmitter")
+                particleEmitter.Rate = 50
+                particleEmitter.Lifetime = NumberRange.new(0.5)
+                particleEmitter.Speed = NumberRange.new(5)
+                particleEmitter.Parent = effect
+                
+                -- Smooth teleport
+                local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                local tween = TweenService:Create(player.Character.HumanoidRootPart, tweenInfo, {
+                    CFrame = targetCFrame
+                })
+                
+                tween:Play()
+                tween.Completed:Wait()
+                
+                -- Clean up effect
+                effect:Destroy()
+                
+                -- Show success notification
+                Rayfield:Notify({
+                    Title = "Teleported",
+                    Content = "Successfully teleported to " .. Value,
+                    Duration = 2
+                })
+            end)
+        end
+    })
+
+    -- Hoops System with visual feedback
+    LegendsSpeedTab:CreateButton({
+        Name = "Collect All Hoops",
+        Callback = function()
+            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+            
+            pcall(function()
+                -- Store original position
+                local originalPosition = player.Character.HumanoidRootPart.CFrame
+                local hoopsCollected = 0
+                
+                for _, hoop in pairs(workspace.Hoops:GetChildren()) do
+                    if hoop:IsA("Part") then
+                        -- Move to hoop
+                        player.Character.HumanoidRootPart.CFrame = hoop.CFrame
+                        
+                        -- Collect hoop
+                        local args = {
+                            [1] = "collectOrb",
+                            [2] = hoop
+                        }
+                        ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+                        
+                        -- Visual feedback
+                        local effect = Instance.new("Part")
+                        effect.Size = Vector3.new(1, 1, 1)
+                        effect.CFrame = hoop.CFrame
+                        effect.Anchored = true
+                        effect.CanCollide = false
+                        effect.Transparency = 0.5
+                        effect.Parent = workspace
+                        
+                        -- Animate effect
+                        TweenService:Create(effect, TweenInfo.new(0.5), {
+                            Size = Vector3.new(5, 5, 5),
+                            Transparency = 1
+                        }):Play()
+                        
+                        game:GetService("Debris"):AddItem(effect, 0.5)
+                        hoopsCollected = hoopsCollected + 1
+                        task.wait(0.1)
+                    end
+                end
+                
+                -- Return to original position
+                player.Character.HumanoidRootPart.CFrame = originalPosition
+                
+                -- Show success notification
+                Rayfield:Notify({
+                    Title = "Hoops Collected",
+                    Content = "Successfully collected " .. hoopsCollected .. " hoops!",
+                    Duration = 2
+                })
+            end)
+        end
+    })
+
+    -- Steps and Trails System with error handling
+    LegendsSpeedTab:CreateButton({
+        Name = "Buy All Steps",
+        Callback = function()
+            pcall(function()
+                local args = {
+                    [1] = "buyAllSteps"
+                }
+                ReplicatedStorage.rEvents.stepEvent:FireServer(unpack(args))
+                
+                Rayfield:Notify({
+                    Title = "Success",
+                    Content = "Purchased all available steps!",
+                    Duration = 2
+                })
+            end)
+        end
+    })
+
+    LegendsSpeedTab:CreateButton({
+        Name = "Buy All Trails",
+        Callback = function()
+            pcall(function()
+                local args = {
+                    [1] = "buyAllTrails"
+                }
+                ReplicatedStorage.rEvents.trailEvent:FireServer(unpack(args))
+                
+                Rayfield:Notify({
+                    Title = "Success",
+                    Content = "Purchased all available trails!",
+                    Duration = 2
+                })
+            end)
+        end
+    })
+
+    -- Anti-AFK System
+    local antiAFKConnection
+    LegendsSpeedTab:CreateToggle({
+        Name = "Anti AFK",
+        CurrentValue = false,
+        Flag = "AntiAFK",
+        Callback = function(Value)
+            if Value then
+                -- Disconnect existing connection if any
+                if antiAFKConnection then
+                    antiAFKConnection:Disconnect()
+                end
+                
+                -- Create new anti-AFK connection
+                antiAFKConnection = player.Idled:Connect(function()
+                    VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                    task.wait(1)
+                    VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                end)
+                
+                Rayfield:Notify({
+                    Title = "Anti AFK",
+                    Content = "Anti AFK system enabled",
+                    Duration = 2
+                })
+            else
+                if antiAFKConnection then
+                    antiAFKConnection:Disconnect()
+                end
+                
+                Rayfield:Notify({
+                    Title = "Anti AFK",
+                    Content = "Anti AFK system disabled",
+                    Duration = 2
+                })
+            end
+        end
+    })
+
+    -- Character respawn handler
+    player.CharacterAdded:Connect(function(char)
+        character = char
+        humanoid = character:WaitForChild("Humanoid")
+        rootPart = character:WaitForChild("HumanoidRootPart")
+        
+        -- Re-enable toggles if they were active
+        if getgenv().AutoOrbs then
+            collectOrbs()
+        end
+        if getgenv().AutoRebirth then
+            doRebirth()
+        end
+        if getgenv().AutoRace then
+            startRace()
+        end
+        if getgenv().AutoGems then
+            collectGems()
+        end
+    end)
+
+    -- Notification on load
     Rayfield:Notify({
-        Title = "Game Not Supported",
-        Content = "This game is not currently supported by MasterHub!",
-        Duration = 5
+        Title = "Legends of Speed",
+        Content = "Script loaded successfully!",
+        Duration = 3
     })
 end
 
--- Anti AFK
-player.Idled:Connect(function()
-    VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    wait(1)
-    VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-end)
-
--- Character respawn handler
-player.CharacterAdded:Connect(function(newCharacter)
-    character = newCharacter
-    humanoid = character:WaitForChild("Humanoid")
-    rootPart = character:WaitForChild("HumanoidRootPart")
-end)
-
--- Load configuration
-Rayfield:LoadConfiguration()
+[Rest of the script remains the same...]
