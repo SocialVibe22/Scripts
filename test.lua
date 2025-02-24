@@ -38,18 +38,47 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
-loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/refs/heads/main/LegendsSpeedTab.lua?token=GHSAT0AAAAAAC7PDVNHIU33OXHRWFFGIYESZ55AIMA'))()
+-- Create tabs based on game
+local gameId = game.PlaceId
 
+if gameId == 3101667897 then -- Legends of Speed
+    -- Load Legends of Speed tab code
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/main/LegendsSpeedTab.lua'))()
+elseif gameId == 537413528 then -- Build A Boat
+    -- Load Build A Boat tab code
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/main/BuildABoatTab.lua'))()
+elseif gameId == 3956818381 then -- Ninja Legends
+    -- Load Ninja Legends tab code
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/main/NinjaLegendsTab.lua'))()
+elseif gameId == 6516141723 then -- Doors
+    -- Load Doors tab code
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/main/DoorsTab.lua'))()
+else
+    -- Create a default tab for unsupported games
+    local DefaultTab = Window:CreateTab("Main")
+    DefaultTab:CreateLabel("This game is not currently supported")
+end
+
+-- Anti AFK
 player.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
     wait(1)
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
+-- Character respawn handler
 player.CharacterAdded:Connect(function(newCharacter)
     character = newCharacter
     humanoid = character:WaitForChild("Humanoid")
     rootPart = character:WaitForChild("HumanoidRootPart")
 end)
 
+-- Load configuration
 Rayfield:LoadConfiguration()
+
+-- Success notification
+Rayfield:Notify({
+    Title = "MasterHub Loaded",
+    Content = "Successfully loaded MasterHub!",
+    Duration = 3
+})
