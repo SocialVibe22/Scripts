@@ -54,7 +54,7 @@ local GAMES = {
 
 -- Criar a tab do jogo específico
 if placeId == GAMES.LEGENDS_OF_SPEED then
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/yourrepo/LegendsSpeedTab.lua'))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/refs/heads/main/LegendsSpeedTab.lua?token=GHSAT0AAAAAAC7PDVNHCQFDOUGSWI55KEGAZ55AXDA'))()
 
 elseif placeId == GAMES.DOORS then
     -- Doors Tab
