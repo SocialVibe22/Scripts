@@ -567,5 +567,3 @@ if placeId == GAMES.LEGENDS_OF_SPEED then
         Duration = 3
     })
 end
-
-[Rest of the script remains the same...]
