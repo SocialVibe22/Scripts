@@ -38,7 +38,7 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
-loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/refs/heads/main/LegendsSpeedTab.lua?token=GHSAT0AAAAAAC7PDVNGEQRT6I7OSASEJORAZ55AGBQ'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/SocialVibe22/Scripts/refs/heads/main/LegendsSpeedTab.lua?token=GHSAT0AAAAAAC7PDVNHIU33OXHRWFFGIYESZ55AIMA'))()
 
 player.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
