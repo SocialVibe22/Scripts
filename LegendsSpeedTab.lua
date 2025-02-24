@@ -2,15 +2,107 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
 
+-- Initialize player references
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
+-- Create Tab
 local LegendsSpeedTab = Window:CreateTab("Legends of Speed", 4483362458)
 
+-- Stats Display Section
+local StatsSection = LegendsSpeedTab:CreateSection("Stats Display")
+
+local function createStatsDisplay()
+    local statsFrame = Instance.new("Frame")
+    statsFrame.Name = "StatsDisplay"
+    statsFrame.Size = UDim2.new(0, 200, 0, 120)
+    statsFrame.Position = UDim2.new(0, 10, 0.5, -60)
+    statsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    statsFrame.BackgroundTransparency = 0.3
+    statsFrame.Parent = player.PlayerGui:FindFirstChild("StatsGui") or Instance.new("ScreenGui", player.PlayerGui)
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.Parent = statsFrame
+
+    local statsLabel = Instance.new("TextLabel")
+    statsLabel.Name = "StatsText"
+    statsLabel.Size = UDim2.new(1, -20, 1, -20)
+    statsLabel.Position = UDim2.new(0, 10, 0, 10)
+    statsLabel.BackgroundTransparency = 1
+    statsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    statsLabel.TextSize = 14
+    statsLabel.Font = Enum.Font.GothamBold
+    statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    statsLabel.Parent = statsFrame
+
+    return statsLabel
+end
+
+LegendsSpeedTab:CreateToggle({
+    Name = "Show Live Stats",
+    CurrentValue = false,
+    Flag = "ShowStats",
+    Callback = function(Value)
+        if Value then
+            local statsLabel = createStatsDisplay()
+            RunService.RenderStepped:Connect(function()
+                if not Value then return end
+                statsLabel.Text = string.format(
+                    "Speed: %s\nRebirths: %s\nGems: %s\nSteps: %s\nHoops: %s",
+                    tostring(player.leaderstats.Speed.Value),
+                    tostring(player.leaderstats.Rebirths.Value),
+                    tostring(player.leaderstats.Gems.Value),
+                    tostring(player.leaderstats.Steps.Value),
+                    tostring(player.leaderstats.Hoops.Value)
+                )
+            end)
+        else
+            local statsGui = player.PlayerGui:FindFirstChild("StatsGui")
+            if statsGui then statsGui:Destroy() end
+        end
+    end
+})
+
+-- Auto Farm Section
 local FarmingSection = LegendsSpeedTab:CreateSection("Auto Farming")
+
+-- Optimized orb collection with area scanning
+local function collectOrbs()
+    if not Players.LocalPlayer.Character or not Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    pcall(function()
+        -- Collect orbs in main area
+        for _, orb in pairs(workspace.orbFolder:GetChildren()) do
+            if orb:IsA("Part") then
+                local args = {
+                    [1] = "collectOrb",
+                    [2] = orb
+                }
+                ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+            end
+        end
+
+        -- Collect orbs in all worlds
+        for _, world in pairs(workspace:GetChildren()) do
+            if world.Name:match("World") then
+                for _, orb in pairs(world:GetDescendants()) do
+                    if orb:IsA("Part") and orb.Name == "outerOrb" then
+                        local args = {
+                            [1] = "collectOrb",
+                            [2] = orb
+                        }
+                        ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+                    end
+                end
+            end
+        end
+    end)
+end
 
 LegendsSpeedTab:CreateToggle({
     Name = "Auto Collect Orbs",
@@ -20,39 +112,29 @@ LegendsSpeedTab:CreateToggle({
         getgenv().AutoOrbs = Value
         
         while getgenv().AutoOrbs do
-            pcall(function()
-                -- Collect orbs in main workspace
-                for _, orb in pairs(workspace.orbFolder:GetChildren()) do
-                    if orb:IsA("Part") then
-                        local args = {
-                            [1] = "collectOrb",
-                            [2] = orb
-                        }
-                        ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-                    end
-                end
-
-                -- Collect orbs in all worlds
-                for _, world in pairs(workspace:GetChildren()) do
-                    if world.Name:match("World") then
-                        for _, orb in pairs(world:GetDescendants()) do
-                            if orb:IsA("Part") and orb.Name == "outerOrb" then
-                                local args = {
-                                    [1] = "collectOrb",
-                                    [2] = orb
-                                }
-                                ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-                            end
-                        end
-                    end
-                end
-            end)
-            task.wait(0.1)
+            collectOrbs()
+            wait(0.1)
         end
     end
 })
 
--- Enhanced Auto Rebirth with optimization
+-- Enhanced rebirth system with progress tracking
+local function doRebirth()
+    pcall(function()
+        local args = {
+            [1] = "rebirthRequest"
+        }
+        ReplicatedStorage.rEvents.rebirthEvent:FireServer(unpack(args))
+        
+        -- Show rebirth notification
+        Rayfield:Notify({
+            Title = "Rebirth Success",
+            Content = "You have successfully rebirthed!",
+            Duration = 2
+        })
+    end)
+end
+
 LegendsSpeedTab:CreateToggle({
     Name = "Auto Rebirth",
     CurrentValue = false,
@@ -61,18 +143,47 @@ LegendsSpeedTab:CreateToggle({
         getgenv().AutoRebirth = Value
         
         while getgenv().AutoRebirth do
-            pcall(function()
-                local args = {
-                    [1] = "rebirthRequest"
-                }
-                ReplicatedStorage.rEvents.rebirthEvent:FireServer(unpack(args))
-            end)
-            task.wait(0.1)
+            doRebirth()
+            wait(0.1)
         end
     end
 })
 
--- Enhanced Auto Race with all tracks
+-- Advanced racing system with path prediction
+local function startRace()
+    if not Players.LocalPlayer.Character or not Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    pcall(function()
+        for _, race in pairs(workspace:GetChildren()) do
+            if race.Name:find("raceStart") then
+                -- Create visual path
+                local pathfinding = game:GetService("PathfindingService")
+                local path = pathfinding:CreatePath()
+                path:ComputeAsync(rootPart.Position, race.Position)
+                
+                if path.Status == Enum.PathStatus.Success then
+                    local waypoints = path:GetWaypoints()
+                    for _, waypoint in ipairs(waypoints) do
+                        local part = Instance.new("Part")
+                        part.Size = Vector3.new(1, 1, 1)
+                        part.Position = waypoint.Position
+                        part.Anchored = true
+                        part.CanCollide = false
+                        part.Transparency = 0.5
+                        part.Parent = workspace
+                        game:GetService("Debris"):AddItem(part, 1)
+                    end
+                end
+                
+                firetouchinterest(rootPart, race, 0)
+                wait()
+                firetouchinterest(rootPart, race, 1)
+                break
+            end
+        end
+    end)
+end
+
 LegendsSpeedTab:CreateToggle({
     Name = "Auto Race",
     CurrentValue = false,
@@ -81,22 +192,29 @@ LegendsSpeedTab:CreateToggle({
         getgenv().AutoRace = Value
         
         while getgenv().AutoRace do
-            pcall(function()
-                for _, race in pairs(workspace:GetChildren()) do
-                    if race.Name:find("raceStart") then
-                        firetouchinterest(rootPart, race, 0)
-                        task.wait()
-                        firetouchinterest(rootPart, race, 1)
-                        break
-                    end
-                end
-            end)
-            task.wait(0.5)
+            startRace()
+            wait(0.5)
         end
     end
 })
 
--- Enhanced Auto Collect Gems with magnet feature
+-- Optimized gem collection
+local function collectGems()
+    if not Players.LocalPlayer.Character or not Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    pcall(function()
+        for _, gem in pairs(workspace.gemFolder:GetChildren()) do
+            if gem:IsA("Part") then
+                local args = {
+                    [1] = "collectGem",
+                    [2] = gem
+                }
+                ReplicatedStorage.rEvents.gemEvent:FireServer(unpack(args))
+            end
+        end
+    end)
+end
+
 LegendsSpeedTab:CreateToggle({
     Name = "Auto Collect Gems",
     CurrentValue = false,
@@ -105,108 +223,13 @@ LegendsSpeedTab:CreateToggle({
         getgenv().AutoGems = Value
         
         while getgenv().AutoGems do
-            pcall(function()
-                for _, gem in pairs(workspace.gemFolder:GetChildren()) do
-                    if gem:IsA("Part") then
-                        -- Magnet effect
-                        local oldPos = gem.Position
-                        gem.CFrame = rootPart.CFrame
-                        
-                        local args = {
-                            [1] = "collectGem",
-                            [2] = gem
-                        }
-                        ReplicatedStorage.rEvents.gemEvent:FireServer(unpack(args))
-                        
-                        -- Reset position to prevent detection
-                        gem.Position = oldPos
-                    end
-                end
-            end)
-            task.wait(0.1)
+            collectGems()
+            wait(0.1)
         end
     end
 })
 
--- Auto Steps Section
-local StepsSection = LegendsSpeedTab:CreateSection("Steps & Trails")
-
--- Enhanced Auto Buy Steps
-LegendsSpeedTab:CreateToggle({
-    Name = "Auto Buy Steps",
-    CurrentValue = false,
-    Flag = "AutoSteps",
-    Callback = function(Value)
-        getgenv().AutoSteps = Value
-        
-        while getgenv().AutoSteps do
-            pcall(function()
-                local args = {
-                    [1] = "buyAllSteps"
-                }
-                ReplicatedStorage.rEvents.stepEvent:FireServer(unpack(args))
-            end)
-            task.wait(1)
-        end
-    end
-})
-
--- Enhanced Auto Buy Trails
-LegendsSpeedTab:CreateToggle({
-    Name = "Auto Buy Trails",
-    CurrentValue = false,
-    Flag = "AutoTrails",
-    Callback = function(Value)
-        getgenv().AutoTrails = Value
-        
-        while getgenv().AutoTrails do
-            pcall(function()
-                local args = {
-                    [1] = "buyAllTrails"
-                }
-                ReplicatedStorage.rEvents.trailEvent:FireServer(unpack(args))
-            end)
-            task.wait(1)
-        end
-    end
-})
-
--- Hoops Section with auto collect
-local HoopsSection = LegendsSpeedTab:CreateSection("Hoops")
-
-LegendsSpeedTab:CreateToggle({
-    Name = "Auto Collect Hoops",
-    CurrentValue = false,
-    Flag = "AutoHoops",
-    Callback = function(Value)
-        getgenv().AutoHoops = Value
-        
-        while getgenv().AutoHoops do
-            pcall(function()
-                for _, hoop in pairs(workspace.Hoops:GetChildren()) do
-                    if hoop:IsA("Part") then
-                        local oldPos = rootPart.CFrame
-                        rootPart.CFrame = hoop.CFrame
-                        
-                        local args = {
-                            [1] = "collectOrb",
-                            [2] = hoop
-                        }
-                        ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-                        
-                        rootPart.CFrame = oldPos
-                        task.wait(0.1)
-                    end
-                end
-            end)
-            task.wait(1)
-        end
-    end
-})
-
--- World Teleport Section with smooth transitions
-local TeleportSection = LegendsSpeedTab:CreateSection("World Teleport")
-
+-- World Teleport System
 local worlds = {
     ["City"] = CFrame.new(-9682.98, 74.8522, 3099.89),
     ["Snow City"] = CFrame.new(-9676.01, 74.8522, 3782.31),
@@ -216,187 +239,152 @@ local worlds = {
 }
 
 LegendsSpeedTab:CreateDropdown({
-    Name = "Select World",
+    Name = "Teleport to World",
     Options = {"City", "Snow City", "Magma City", "Space", "Candy Land"},
     CurrentOption = "City",
     Flag = "SelectedWorld",
     Callback = function(Value)
+        if not Players.LocalPlayer.Character or not Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        -- Smooth teleport with effects
+        local targetCFrame = worlds[Value]
+        local tweenInfo = TweenInfo.new(
+            1,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out
+        )
+        
+        -- Create teleport effect
+        local effect = Instance.new("Part")
+        effect.Size = Vector3.new(1, 1, 1)
+        effect.CFrame = rootPart.CFrame
+        effect.Anchored = true
+        effect.CanCollide = false
+        effect.Transparency = 0.5
+        effect.Parent = workspace
+        
+        local particleEmitter = Instance.new("ParticleEmitter")
+        particleEmitter.Rate = 50
+        particleEmitter.Lifetime = NumberRange.new(0.5)
+        particleEmitter.Speed = NumberRange.new(5)
+        particleEmitter.Parent = effect
+        
+        TweenService:Create(rootPart, tweenInfo, {
+            CFrame = targetCFrame
+        }):Play()
+        
+        wait(1)
+        effect:Destroy()
+    end
+})
+
+-- Hoops System
+LegendsSpeedTab:CreateButton({
+    Name = "Collect All Hoops",
+    Callback = function()
+        if not Players.LocalPlayer.Character or not Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+        
         pcall(function()
-            if worlds[Value] then
-                -- Smooth teleport
-                local tween = TweenService:Create(rootPart, 
-                    TweenInfo.new(1, Enum.EasingStyle.Quad), 
-                    {CFrame = worlds[Value]}
-                )
-                tween:Play()
+            for _, hoop in pairs(workspace.Hoops:GetChildren()) do
+                if hoop:IsA("Part") then
+                    local args = {
+                        [1] = "collectOrb",
+                        [2] = hoop
+                    }
+                    ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+                    
+                    -- Visual feedback
+                    local effect = Instance.new("Part")
+                    effect.Size = Vector3.new(1, 1, 1)
+                    effect.CFrame = hoop.CFrame
+                    effect.Anchored = true
+                    effect.CanCollide = false
+                    effect.Transparency = 0.5
+                    effect.Parent = workspace
+                    
+                    TweenService:Create(effect, TweenInfo.new(0.5), {
+                        Size = Vector3.new(5, 5, 5),
+                        Transparency = 1
+                    }):Play()
+                    
+                    game:GetService("Debris"):AddItem(effect, 0.5)
+                    wait(0.1)
+                end
             end
         end)
     end
 })
 
--- Auto Farm All Worlds
-LegendsSpeedTab:CreateToggle({
-    Name = "Auto Farm All Worlds",
-    CurrentValue = false,
-    Flag = "AutoFarmWorlds",
-    Callback = function(Value)
-        getgenv().AutoFarmWorlds = Value
-        
-        while getgenv().AutoFarmWorlds do
-            pcall(function()
-                for worldName, worldCFrame in pairs(worlds) do
-                    if not getgenv().AutoFarmWorlds then break end
-                    
-                    -- Teleport to world
-                    local tween = TweenService:Create(rootPart,
-                        TweenInfo.new(1, Enum.EasingStyle.Quad),
-                        {CFrame = worldCFrame}
-                    )
-                    tween:Play()
-                    tween.Completed:Wait()
-                    
-                    -- Farm orbs in this world
-                    for i = 1, 50 do
-                        if not getgenv().AutoFarmWorlds then break end
-                        
-                        for _, orb in pairs(workspace:GetDescendants()) do
-                            if orb:IsA("Part") and (orb.Name == "outerOrb" or orb.Name:find("Orb")) then
-                                local args = {
-                                    [1] = "collectOrb",
-                                    [2] = orb
-                                }
-                                ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-                            end
-                        end
-                        task.wait(0.1)
-                    end
-                end
-            end)
-            task.wait(1)
-        end
+-- Steps and Trails System
+LegendsSpeedTab:CreateButton({
+    Name = "Buy All Steps",
+    Callback = function()
+        pcall(function()
+            local args = {
+                [1] = "buyAllSteps"
+            }
+            ReplicatedStorage.rEvents.stepEvent:FireServer(unpack(args))
+            
+            Rayfield:Notify({
+                Title = "Success",
+                Content = "Purchased all available steps!",
+                Duration = 2
+            })
+        end)
     end
 })
 
--- Speed Boost Section
-local BoostSection = LegendsSpeedTab:CreateSection("Speed Boosts")
-
-LegendsSpeedTab:CreateToggle({
-    Name = "Auto Use Speed Boosts",
-    CurrentValue = false,
-    Flag = "AutoBoosts",
-    Callback = function(Value)
-        getgenv().AutoBoosts = Value
-        
-        while getgenv().AutoBoosts do
-            pcall(function()
-                local args = {
-                    [1] = "useBoost",
-                    [2] = "Speed"
-                }
-                ReplicatedStorage.rEvents.boostEvent:FireServer(unpack(args))
-            end)
-            task.wait(1)
-        end
+LegendsSpeedTab:CreateButton({
+    Name = "Buy All Trails",
+    Callback = function()
+        pcall(function()
+            local args = {
+                [1] = "buyAllTrails"
+            }
+            ReplicatedStorage.rEvents.trailEvent:FireServer(unpack(args))
+            
+            Rayfield:Notify({
+                Title = "Success",
+                Content = "Purchased all available trails!",
+                Duration = 2
+            })
+        end)
     end
 })
 
--- Pet Section
-local PetSection = LegendsSpeedTab:CreateSection("Pets")
-
+-- Anti-AFK System
+local antiAFKConnection
 LegendsSpeedTab:CreateToggle({
-    Name = "Auto Hatch Best Egg",
+    Name = "Anti AFK",
     CurrentValue = false,
-    Flag = "AutoHatch",
-    Callback = function(Value)
-        getgenv().AutoHatch = Value
-        
-        while getgenv().AutoHatch do
-            pcall(function()
-                local args = {
-                    [1] = "openCrystal",
-                    [2] = "Best"
-                }
-                ReplicatedStorage.rEvents.openCrystalRemote:FireServer(unpack(args))
-            end)
-            task.wait(0.5)
-        end
-    end
-})
-
-LegendsSpeedTab:CreateToggle({
-    Name = "Auto Equip Best Pets",
-    CurrentValue = false,
-    Flag = "AutoEquipPets",
-    Callback = function(Value)
-        getgenv().AutoEquipPets = Value
-        
-        while getgenv().AutoEquipPets do
-            pcall(function()
-                local args = {
-                    [1] = "equipBest"
-                }
-                ReplicatedStorage.rEvents.petEquipEvent:FireServer(unpack(args))
-            end)
-            task.wait(1)
-        end
-    end
-})
-
--- Stats Section
-local StatsSection = LegendsSpeedTab:CreateSection("Stats")
-
-LegendsSpeedTab:CreateToggle({
-    Name = "Show Stats",
-    CurrentValue = false,
-    Flag = "ShowStats",
+    Flag = "AntiAFK",
     Callback = function(Value)
         if Value then
-            -- Create stats GUI
-            local statsGui = Instance.new("ScreenGui")
-            statsGui.Name = "SpeedStats"
-            statsGui.Parent = player.PlayerGui
-            
-            local frame = Instance.new("Frame")
-            frame.Size = UDim2.new(0, 200, 0, 100)
-            frame.Position = UDim2.new(0, 10, 0.5, -50)
-            frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            frame.BackgroundTransparency = 0.5
-            frame.Parent = statsGui
-            
-            local stats = Instance.new("TextLabel")
-            stats.Size = UDim2.new(1, -10, 1, -10)
-            stats.Position = UDim2.new(0, 5, 0, 5)
-            stats.BackgroundTransparency = 1
-            stats.TextColor3 = Color3.fromRGB(255, 255, 255)
-            stats.TextSize = 14
-            stats.Font = Enum.Font.GothamBold
-            stats.Parent = frame
-            
-            -- Update stats
-            RunService.RenderStepped:Connect(function()
-                if not Value then return end
-                stats.Text = string.format(
-                    "Speed: %d\nRebirths: %d\nGems: %d",
-                    player.leaderstats.Speed.Value,
-                    player.leaderstats.Rebirths.Value,
-                    player.leaderstats.Gems.Value
-                )
+            antiAFKConnection = game:GetService("Players").LocalPlayer.Idled:Connect(function()
+                VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                wait(1)
+                VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
             end)
         else
-            local statsGui = player.PlayerGui:FindFirstChild("SpeedStats")
-            if statsGui then statsGui:Destroy() end
+            if antiAFKConnection then
+                antiAFKConnection:Disconnect()
+            end
         end
     end
 })
 
-player.CharacterAdded:Connect(function(newCharacter)
-    character = newCharacter
+-- Character respawn handler
+Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    character = char
     humanoid = character:WaitForChild("Humanoid")
     rootPart = character:WaitForChild("HumanoidRootPart")
 end)
 
+-- Notification on load
 Rayfield:Notify({
     Title = "Legends of Speed",
-    Content = "Enhanced script loaded successfully!",
+    Content = "Script loaded successfully!",
     Duration = 3
 })
+
+return LegendsSpeedTab
