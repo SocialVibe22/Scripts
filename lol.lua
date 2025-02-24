@@ -39,44 +39,32 @@ local BoatTab = Window:CreateTab("Build a Boat", 4483362458)
 -- Auto Build Section
 local BuildSection = BoatTab:CreateSection("Auto Build")
 
--- Load saved builds
-local savedBuilds = {}
-for _, build in pairs(workspace:GetDescendants()) do
-    if build:IsA("Model") and build.Name:match("SavedBuild") then
-        table.insert(savedBuilds, build.Name)
-    end
-end
-
-BoatTab:CreateDropdown({
-    Name = "Select Build",
-    Options = savedBuilds,
-    CurrentOption = savedBuilds[1] or "None",
-    Flag = "SelectedBuild",
-    Callback = function(Value)
-        -- Selected build will be used by auto build
-    end
-})
-
+-- Fixed auto build function
 local function autoBuild()
     if not getgenv().AutoBuild then return end
     
     pcall(function()
-        -- Load selected build
-        local args = {
-            [1] = "LoadBoat",
-            [2] = Rayfield.Flags.SelectedBuild.Value
-        }
-        ReplicatedStorage.BuildingEvents:FireServer(unpack(args))
+        -- Get boat model
+        local boat = workspace.BoatStages.BoatStage:FindFirstChild(player.Name .. "Boat")
+        if not boat then return end
         
-        -- Place blocks optimally
-        for _, block in pairs(workspace.BoatParts:GetChildren()) do
-            local args = {
-                [1] = "PlaceBlock",
-                [2] = block.Name,
-                [3] = block.CFrame
-            }
-            ReplicatedStorage.BuildingEvents:FireServer(unpack(args))
-            task.wait(0.1) -- Prevent server overload
+        -- Place blocks in optimal pattern
+        local blockTypes = {"WoodBlock", "MetalBlock", "PlasticBlock"}
+        local startPos = boat.PrimaryPart.Position
+        
+        for x = -2, 2 do
+            for z = -2, 2 do
+                local blockType = blockTypes[math.random(1, #blockTypes)]
+                local pos = startPos + Vector3.new(x * 2, 0, z * 2)
+                
+                local args = {
+                    [1] = blockType,
+                    [2] = CFrame.new(pos),
+                    [3] = boat
+                }
+                ReplicatedStorage.PlaceBlock:FireServer(unpack(args))
+                task.wait(0.1)
+            end
         end
     end)
 end
@@ -87,24 +75,30 @@ BoatTab:CreateToggle({
     Flag = "AutoBuild",
     Callback = function(Value)
         getgenv().AutoBuild = Value
-        if Value then
+        while getgenv().AutoBuild do
             autoBuild()
+            task.wait(1)
         end
     end
 })
 
--- Auto Farm Section
-local FarmSection = BoatTab:CreateSection("Auto Farm")
-
+-- Fixed auto farm gold function
 local function collectGold()
-    for _, gold in pairs(workspace.CollectibleGold:GetChildren()) do
-        if gold:IsA("Part") then
-            local oldPos = rootPart.CFrame
-            rootPart.CFrame = gold.CFrame
-            task.wait(0.1)
-            rootPart.CFrame = oldPos
+    pcall(function()
+        for _, gold in pairs(workspace:GetDescendants()) do
+            if gold:IsA("Part") and gold.Name == "Gold" then
+                local oldPos = rootPart.CFrame
+                rootPart.CFrame = gold.CFrame
+                task.wait(0.1)
+                rootPart.CFrame = oldPos
+                
+                -- Fire touch interest
+                firetouchinterest(rootPart, gold, 0)
+                task.wait()
+                firetouchinterest(rootPart, gold, 1)
+            end
         end
-    end
+    end)
 end
 
 BoatTab:CreateToggle({
@@ -113,39 +107,45 @@ BoatTab:CreateToggle({
     Flag = "AutoFarmGold",
     Callback = function(Value)
         getgenv().AutoFarmGold = Value
-        
         while getgenv().AutoFarmGold do
-            pcall(function()
-                collectGold()
-            end)
+            collectGold()
             task.wait(0.5)
         end
     end
 })
 
--- Auto Win Section
-local WinSection = BoatTab:CreateSection("Auto Win")
-
+-- Improved auto win function
 local function autoWin()
     if not getgenv().AutoWin then return end
     
     pcall(function()
-        -- Teleport to end
-        local endPart = workspace.BoatStages:FindFirstChild("EndStage")
-        if endPart then
-            local targetPos = endPart.Position + Vector3.new(0, 10, 0)
-            local tweenInfo = TweenInfo.new(
-                5, -- Time
-                Enum.EasingStyle.Linear,
-                Enum.EasingDirection.Out
-            )
-            
-            local tween = TweenService:Create(rootPart, tweenInfo, {
-                CFrame = CFrame.new(targetPos)
-            })
-            tween:Play()
-            tween.Completed:Wait()
-        end
+        -- Get end point
+        local endPoint = workspace.BoatStages:FindFirstChild("EndStage")
+        if not endPoint then return end
+        
+        -- Get boat
+        local boat = workspace.BoatStages.BoatStage:FindFirstChild(player.Name .. "Boat")
+        if not boat then return end
+        
+        -- Smooth teleport to end
+        local targetPos = endPoint.Position + Vector3.new(0, 10, 0)
+        local tweenInfo = TweenInfo.new(
+            5, -- Duration
+            Enum.EasingStyle.Linear,
+            Enum.EasingDirection.Out
+        )
+        
+        local tween = TweenService:Create(boat.PrimaryPart, tweenInfo, {
+            CFrame = CFrame.new(targetPos)
+        })
+        tween:Play()
+        tween.Completed:Wait()
+        
+        -- Wait for win
+        task.wait(1)
+        
+        -- Return to start
+        boat.PrimaryPart.CFrame = workspace.BoatStages.BoatStage.DockLocation.CFrame
     end)
 end
 
@@ -155,15 +155,14 @@ BoatTab:CreateToggle({
     Flag = "AutoWin",
     Callback = function(Value)
         getgenv().AutoWin = Value
-        if Value then
+        while getgenv().AutoWin do
             autoWin()
+            task.wait(1)
         end
     end
 })
 
--- Infinite Blocks Section
-local BlocksSection = BoatTab:CreateSection("Infinite Blocks")
-
+-- Fixed infinite blocks
 BoatTab:CreateToggle({
     Name = "Infinite Blocks",
     CurrentValue = false,
@@ -176,8 +175,9 @@ BoatTab:CreateToggle({
                 local args = {...}
                 local method = getnamecallmethod()
                 
-                if method == "FireServer" and self.Name == "BlockLimitCheck" then
-                    return true -- Always allow block placement
+                if method == "FireServer" and self.Name == "PlaceBlock" then
+                    -- Bypass block limit
+                    return true
                 end
                 
                 return oldNamecall(self, ...)
@@ -186,23 +186,23 @@ BoatTab:CreateToggle({
     end
 })
 
--- Speed Build Section
-local SpeedSection = BoatTab:CreateSection("Speed Build")
-
+-- Improved speed build
 BoatTab:CreateToggle({
     Name = "Speed Build",
     CurrentValue = false,
     Flag = "SpeedBuild",
     Callback = function(Value)
         if Value then
-            -- Increase build speed
+            -- Remove build delay
             local oldNamecall
             oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
                 local args = {...}
                 local method = getnamecallmethod()
                 
-                if method == "FireServer" and self.Name == "BuildDelay" then
-                    return 0 -- No build delay
+                if method == "FireServer" and self.Name == "PlaceBlock" then
+                    -- Remove delay
+                    task.wait()
+                    return oldNamecall(self, unpack(args))
                 end
                 
                 return oldNamecall(self, ...)
@@ -211,35 +211,38 @@ BoatTab:CreateToggle({
     end
 })
 
--- Anti Water Section
-local WaterSection = BoatTab:CreateSection("Anti Water")
-
+-- Enhanced anti water
 BoatTab:CreateToggle({
     Name = "Anti Water",
     CurrentValue = false,
     Flag = "AntiWater",
     Callback = function(Value)
+        getgenv().AntiWater = Value
+        
         if Value then
-            -- Make boat float above water
             RunService.Heartbeat:Connect(function()
                 if not getgenv().AntiWater then return end
                 
-                local boat = workspace.Boats:FindFirstChild(player.Name .. "Boat")
-                if boat then
+                pcall(function()
+                    -- Get boat
+                    local boat = workspace.BoatStages.BoatStage:FindFirstChild(player.Name .. "Boat")
+                    if not boat then return end
+                    
+                    -- Make boat float
                     for _, part in pairs(boat:GetDescendants()) do
                         if part:IsA("BasePart") then
                             part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+                            part.CanCollide = true
+                            part.Velocity = Vector3.new(0, 5, 0)
                         end
                     end
-                end
+                end)
             end)
         end
     end
 })
 
--- Flight Section
-local FlightSection = BoatTab:CreateSection("Flight")
-
+-- Improved flight
 BoatTab:CreateToggle({
     Name = "Flight",
     CurrentValue = false,
@@ -272,20 +275,15 @@ BoatTab:CreateToggle({
     end
 })
 
--- God Mode Section
-local GodSection = BoatTab:CreateSection("God Mode")
-
 BoatTab:CreateToggle({
     Name = "God Mode",
     CurrentValue = false,
     Flag = "GodMode",
     Callback = function(Value)
         if Value then
-            -- Make character invincible
             humanoid.MaxHealth = math.huge
             humanoid.Health = math.huge
             
-            -- Prevent damage
             local oldNamecall
             oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
                 local args = {...}
@@ -297,34 +295,37 @@ BoatTab:CreateToggle({
                 
                 return oldNamecall(self, ...)
             end)
+            
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
         else
             humanoid.MaxHealth = 100
             humanoid.Health = 100
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
         end
     end
 })
 
--- Character respawn handler
 player.CharacterAdded:Connect(function(newCharacter)
     character = newCharacter
     humanoid = character:WaitForChild("Humanoid")
     rootPart = character:WaitForChild("HumanoidRootPart")
     
-    -- Restore toggles
     if Rayfield.Flags.GodMode.Value then
         humanoid.MaxHealth = math.huge
         humanoid.Health = math.huge
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
     end
 end)
 
--- Anti AFK
 player.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
     wait(1)
     VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
 
--- Notification on load
 Rayfield:Notify({
     Title = "Build a Boat",
     Content = "Script loaded successfully!",
