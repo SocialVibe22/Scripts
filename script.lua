@@ -32,111 +32,54 @@ local StatsTab = Window:CreateTab("📊 Stats")
 local State = {
     autoOrbs = false,
     autoHoops = false,
-    autoRebirth = false,
-    lastOrbPosition = nil,
-    lastHoopPosition = nil
+    autoRebirth = false
 }
 
--- Fixed orb collection function
+-- Direct orb collection without teleporting
 local function collectOrbs()
     if not State.autoOrbs then return end
     
-    local oldPos = rootPart.CFrame
-    
-    -- Collect main orbs
-    for _, orb in ipairs(workspace.orbFolder:GetChildren()) do
-        if orb:IsA("Part") and State.autoOrbs then
-            -- Fixed: Properly touch the orb
-            firetouchinterest(rootPart, orb, 0)
-            task.wait()
-            firetouchinterest(rootPart, orb, 1)
-            
-            -- Fixed: Send proper collection event
-            local args = {
-                [1] = "collectOrb",
-                [2] = orb
-            }
-            ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-            
-            State.lastOrbPosition = orb.Position
-            task.wait(0.1)
+    pcall(function()
+        -- Collect main orbs
+        for _, orb in ipairs(workspace.orbFolder:GetChildren()) do
+            if orb:IsA("Part") then
+                ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", orb)
+            end
         end
-    end
-    
-    -- Collect world orbs
-    for _, world in ipairs(workspace:GetChildren()) do
-        if world.Name:match("World") then
-            for _, orb in ipairs(world:GetDescendants()) do
-                if orb:IsA("Part") and orb.Name == "outerOrb" and State.autoOrbs then
-                    -- Fixed: Properly touch the orb
-                    firetouchinterest(rootPart, orb, 0)
-                    task.wait()
-                    firetouchinterest(rootPart, orb, 1)
-                    
-                    -- Fixed: Send proper collection event
-                    local args = {
-                        [1] = "collectOrb",
-                        [2] = orb
-                    }
-                    ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-                    
-                    State.lastOrbPosition = orb.Position
-                    task.wait(0.1)
+        
+        -- Collect world orbs
+        for _, world in ipairs(workspace:GetChildren()) do
+            if world.Name:match("World") then
+                for _, orb in ipairs(world:GetDescendants()) do
+                    if orb:IsA("Part") and orb.Name == "outerOrb" then
+                        ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", orb)
+                    end
                 end
             end
         end
-    end
-    
-    rootPart.CFrame = oldPos
+    end)
 end
 
--- Fixed hoop collection function
+-- Direct hoop collection without teleporting
 local function collectHoops()
     if not State.autoHoops then return end
     
-    local oldPos = rootPart.CFrame
-    
-    for _, hoop in ipairs(workspace.Hoops:GetChildren()) do
-        if hoop:IsA("Part") and State.autoHoops then
-            -- Fixed: Properly touch the hoop
-            firetouchinterest(rootPart, hoop, 0)
-            task.wait()
-            firetouchinterest(rootPart, hoop, 1)
-            
-            -- Fixed: Send proper collection event
-            local args = {
-                [1] = "collectOrb",
-                [2] = hoop
-            }
-            ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
-            
-            -- Fixed: Add proper delay
-            State.lastHoopPosition = hoop.Position
-            task.wait(0.1)
+    pcall(function()
+        for _, hoop in ipairs(workspace.Hoops:GetChildren()) do
+            if hoop:IsA("Part") then
+                ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", hoop)
+            end
         end
-    end
-    
-    rootPart.CFrame = oldPos
+    end)
 end
 
-local function createVisualEffect(position)
-    local effect = Instance.new("Part")
-    effect.Size = Vector3.new(1, 1, 1)
-    effect.Position = position
-    effect.Anchored = true
-    effect.CanCollide = false
-    effect.Transparency = 0.5
-    effect.Material = Enum.Material.Neon
-    effect.Color = Color3.fromHSV(tick() % 1, 1, 1)
-    effect.Parent = workspace
+-- Rebirth function
+local function doRebirth()
+    if not State.autoRebirth then return end
     
-    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    TweenService:Create(effect, tweenInfo, {
-        Size = Vector3.new(5, 5, 5),
-        Transparency = 1
-    }):Play()
-    
-    game:GetService("Debris"):AddItem(effect, 0.5)
+    pcall(function()
+        ReplicatedStorage.rEvents.rebirthEvent:FireServer("rebirthRequest")
+    end)
 end
 
 MainTab:CreateToggle({
@@ -190,59 +133,22 @@ MainTab:CreateToggle({
     end
 })
 
-StatsTab:CreateToggle({
-    Name = "📈 Show Live Stats",
-    CurrentValue = false,
-    Flag = "ShowStats",
-    Callback = function(Value)
-        if Value then
-            RunService.RenderStepped:Connect(function()
-                if not Value then return end
-                if not player:FindFirstChild("leaderstats") then return end
-                
-                Rayfield:Notify({
-                    Title = "Current Stats",
-                    Content = string.format(
-                        "Speed: %s\nRebirths: %s\nGems: %s",
-                        tostring(player.leaderstats.Speed.Value),
-                        tostring(player.leaderstats.Rebirths.Value),
-                        tostring(player.leaderstats.Gems.Value)
-                    ),
-                    Duration = 1
-                })
-            end)
-        end
-    end
-})
-
--- Fixed main loop with proper delays
+-- Main collection loop
 RunService.Heartbeat:Connect(function()
     if State.autoOrbs then
         collectOrbs()
-        task.wait(0.1) -- Added delay to prevent overwhelming
     end
     
     if State.autoHoops then
         collectHoops()
-        task.wait(0.1) -- Added delay to prevent overwhelming
     end
     
     if State.autoRebirth then
-        ReplicatedStorage.rEvents.rebirthEvent:FireServer("rebirthRequest")
-        task.wait(1) -- Added longer delay for rebirth
-    end
-    
-    if State.lastOrbPosition then
-        createVisualEffect(State.lastOrbPosition)
-        State.lastOrbPosition = nil
-    end
-    
-    if State.lastHoopPosition then
-        createVisualEffect(State.lastHoopPosition)
-        State.lastHoopPosition = nil
+        doRebirth()
     end
 end)
 
+-- Character respawn handler
 player.CharacterAdded:Connect(function(char)
     character = char
     humanoid = character:WaitForChild("Humanoid")
