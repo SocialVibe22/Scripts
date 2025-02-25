@@ -35,28 +35,46 @@ local State = {
     autoRebirth = false
 }
 
--- Fixed orb collection function
+-- Direct orb collection function
 local function collectOrbs()
     if not State.autoOrbs then return end
     
     pcall(function()
-        -- Collect main orbs
+        -- Direct orb collection
         for _, orb in pairs(workspace.orbFolder:GetChildren()) do
             if orb:IsA("Part") then
+                -- Teleport to orb
+                local oldPos = rootPart.CFrame
+                rootPart.CFrame = orb.CFrame
+                task.wait()
+                
+                -- Fire touch event
                 firetouchinterest(rootPart, orb, 0)
                 task.wait()
                 firetouchinterest(rootPart, orb, 1)
+                
+                -- Return to original position
+                rootPart.CFrame = oldPos
             end
         end
         
-        -- Collect world orbs
+        -- Direct world orb collection
         for _, world in pairs(workspace:GetChildren()) do
             if world.Name:match("World") then
                 for _, orb in pairs(world:GetDescendants()) do
                     if orb:IsA("Part") and orb.Name == "outerOrb" then
+                        -- Teleport to orb
+                        local oldPos = rootPart.CFrame
+                        rootPart.CFrame = orb.CFrame
+                        task.wait()
+                        
+                        -- Fire touch event
                         firetouchinterest(rootPart, orb, 0)
                         task.wait()
                         firetouchinterest(rootPart, orb, 1)
+                        
+                        -- Return to original position
+                        rootPart.CFrame = oldPos
                     end
                 end
             end
@@ -64,27 +82,36 @@ local function collectOrbs()
     end)
 end
 
--- Fixed hoop collection function
+-- Direct hoop collection function
 local function collectHoops()
     if not State.autoHoops then return end
     
     pcall(function()
         for _, hoop in pairs(workspace.Hoops:GetChildren()) do
             if hoop:IsA("Part") then
+                -- Teleport to hoop
+                local oldPos = rootPart.CFrame
+                rootPart.CFrame = hoop.CFrame
+                task.wait()
+                
+                -- Fire touch event
                 firetouchinterest(rootPart, hoop, 0)
                 task.wait()
                 firetouchinterest(rootPart, hoop, 1)
+                
+                -- Return to original position
+                rootPart.CFrame = oldPos
             end
         end
     end)
 end
 
--- Fixed rebirth function
+-- Direct rebirth function
 local function doRebirth()
     if not State.autoRebirth then return end
     
     pcall(function()
-        game:GetService("ReplicatedStorage").rEvents.rebirthEvent:FireServer("rebirthRequest")
+        ReplicatedStorage.rEvents.rebirthEvent:FireServer("rebirthRequest")
     end)
 end
 
@@ -101,6 +128,14 @@ MainTab:CreateToggle({
                 Content = "Now collecting orbs automatically!",
                 Duration = 2
             })
+            
+            -- Start collection loop
+            spawn(function()
+                while State.autoOrbs do
+                    collectOrbs()
+                    task.wait(0.1)
+                end
+            end)
         end
     end
 })
@@ -118,6 +153,14 @@ MainTab:CreateToggle({
                 Content = "Now collecting hoops automatically!",
                 Duration = 2
             })
+            
+            -- Start collection loop
+            spawn(function()
+                while State.autoHoops do
+                    collectHoops()
+                    task.wait(0.1)
+                end
+            end)
         end
     end
 })
@@ -135,28 +178,17 @@ MainTab:CreateToggle({
                 Content = "Now performing rebirths automatically!",
                 Duration = 2
             })
+            
+            -- Start rebirth loop
+            spawn(function()
+                while State.autoRebirth do
+                    doRebirth()
+                    task.wait(0.1)
+                end
+            end)
         end
     end
 })
-
--- Main collection loop with error handling
-spawn(function()
-    while true do
-        if State.autoOrbs then
-            collectOrbs()
-        end
-        
-        if State.autoHoops then
-            collectHoops()
-        end
-        
-        if State.autoRebirth then
-            doRebirth()
-        end
-        
-        task.wait(0.1)
-    end
-end)
 
 -- Character respawn handler
 player.CharacterAdded:Connect(function(char)
