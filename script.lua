@@ -17,29 +17,29 @@ local rootPart = character:WaitForChild("HumanoidRootPart")
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Legends Speed X",
-    LoadingTitle = "Loading Speed X...",
+    Name = "💨 Speed X Pro",
+    LoadingTitle = "Speed X Pro",
     LoadingSubtitle = "by Master",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "SpeedX",
+        FolderName = "SpeedXPro",
         FileName = "Config"
     },
     KeySystem = true,
     KeySettings = {
-        Title = "Speed X",
-        Subtitle = "Key System",
+        Title = "Speed X Pro",
+        Subtitle = "Premium Key System",
         Note = "Join discord.gg/speedx for key",
         SaveKey = true,
-        Key = {"SPEEDX2024"}
+        Key = {"SPEEDXPRO2024"}
     }
 })
 
-local MainTab = Window:CreateTab("Main")
-local FarmTab = Window:CreateTab("Farming")
-local BoostTab = Window:CreateTab("Boosts")
-local TeleportTab = Window:CreateTab("Teleport")
-local VisualsTab = Window:CreateTab("Visuals")
+local MainTab = Window:CreateTab("⚡ Main")
+local FarmTab = Window:CreateTab("🌟 Farming")
+local BoostTab = Window:CreateTab("🚀 Boosts")
+local TeleportTab = Window:CreateTab("🌎 Worlds")
+local StatsTab = Window:CreateTab("📊 Stats")
 
 local State = {
     orbsEnabled = false,
@@ -48,7 +48,8 @@ local State = {
     autoRebirth = false,
     autoRace = false,
     speedBoost = false,
-    visualEffects = false
+    visualEffects = false,
+    autoCollectAll = false
 }
 
 local Config = {
@@ -115,40 +116,75 @@ local function collectHoops()
     end)
 end
 
+local function doRebirth()
+    pcall(function()
+        ReplicatedStorage.rEvents.rebirthEvent:FireServer("rebirthRequest")
+    end)
+end
+
+local function updateStats()
+    if not player:FindFirstChild("leaderstats") then return end
+    
+    local stats = {
+        Speed = player.leaderstats.Speed.Value,
+        Rebirths = player.leaderstats.Rebirths.Value,
+        Gems = player.leaderstats.Gems.Value,
+        Steps = player.leaderstats.Steps.Value,
+        Hoops = player.leaderstats.Hoops.Value
+    }
+    
+    return stats
+end
+
 MainTab:CreateToggle({
-    Name = "Auto Collect Orbs",
+    Name = "🔄 Auto Collect All",
+    CurrentValue = false,
+    Flag = "AutoCollectAll",
+    Callback = function(Value)
+        State.autoCollectAll = Value
+        State.orbsEnabled = Value
+        State.hoopsEnabled = Value
+        State.autoRebirth = Value
+        
+        if Value then
+            Rayfield:Notify({
+                Title = "Auto Collect Enabled",
+                Content = "Now collecting everything automatically!",
+                Duration = 2
+            })
+        end
+    end
+})
+
+FarmTab:CreateToggle({
+    Name = "💫 Auto Collect Orbs",
     CurrentValue = false,
     Flag = "AutoOrbs",
     Callback = function(Value)
         State.orbsEnabled = Value
-        if Value then
-            Rayfield:Notify({
-                Title = "Orbs Enabled",
-                Content = "Now collecting all orbs automatically!",
-                Duration = 2
-            })
-        end
     end
 })
 
-MainTab:CreateToggle({
-    Name = "Auto Collect Hoops",
+FarmTab:CreateToggle({
+    Name = "🎯 Auto Collect Hoops",
     CurrentValue = false,
     Flag = "AutoHoops",
     Callback = function(Value)
         State.hoopsEnabled = Value
-        if Value then
-            Rayfield:Notify({
-                Title = "Hoops Enabled",
-                Content = "Now collecting all hoops automatically!",
-                Duration = 2
-            })
-        end
     end
 })
 
-MainTab:CreateSlider({
-    Name = "Collection Speed",
+FarmTab:CreateToggle({
+    Name = "♻️ Auto Rebirth",
+    CurrentValue = false,
+    Flag = "AutoRebirth",
+    Callback = function(Value)
+        State.autoRebirth = Value
+    end
+})
+
+BoostTab:CreateSlider({
+    Name = "⚡ Collection Speed",
     Range = {0, 100},
     Increment = 1,
     Suffix = "ms",
@@ -161,7 +197,7 @@ MainTab:CreateSlider({
 })
 
 BoostTab:CreateSlider({
-    Name = "Speed Multiplier",
+    Name = "🏃 Speed Multiplier",
     Range = {1, 10},
     Increment = 0.1,
     Suffix = "x",
@@ -175,27 +211,6 @@ BoostTab:CreateSlider({
     end
 })
 
-VisualsTab:CreateToggle({
-    Name = "Visual Effects",
-    CurrentValue = false,
-    Flag = "VisualEffects",
-    Callback = function(Value)
-        State.visualEffects = Value
-    end
-})
-
-VisualsTab:CreateSlider({
-    Name = "Effects Intensity",
-    Range = {0.1, 2},
-    Increment = 0.1,
-    Suffix = "x",
-    CurrentValue = 1,
-    Flag = "EffectsIntensity",
-    Callback = function(Value)
-        Config.effectsIntensity = Value
-    end
-})
-
 local worlds = {
     ["City"] = CFrame.new(-9682.98, 74.8522, 3099.89),
     ["Snow City"] = CFrame.new(-9676.01, 74.8522, 3782.31),
@@ -205,7 +220,7 @@ local worlds = {
 }
 
 TeleportTab:CreateDropdown({
-    Name = "Teleport",
+    Name = "🌍 Select World",
     Options = {"City", "Snow City", "Magma City", "Space", "Candy Land"},
     CurrentOption = "City",
     Flag = "SelectedWorld",
@@ -226,6 +241,32 @@ TeleportTab:CreateDropdown({
     end
 })
 
+StatsTab:CreateToggle({
+    Name = "📈 Show Live Stats",
+    CurrentValue = false,
+    Flag = "ShowStats",
+    Callback = function(Value)
+        if Value then
+            RunService.RenderStepped:Connect(function()
+                if not Value then return end
+                local stats = updateStats()
+                if not stats then return end
+                
+                Rayfield:Notify({
+                    Title = "Current Stats",
+                    Content = string.format(
+                        "Speed: %s\nRebirths: %s\nGems: %s",
+                        stats.Speed,
+                        stats.Rebirths,
+                        stats.Gems
+                    ),
+                    Duration = 1
+                })
+            end)
+        end
+    end
+})
+
 RunService.Heartbeat:Connect(function()
     if State.orbsEnabled then
         collectOrbs()
@@ -234,6 +275,10 @@ RunService.Heartbeat:Connect(function()
     if State.hoopsEnabled then
         collectHoops()
         task.wait(Config.hoopCollectDelay)
+    end
+    if State.autoRebirth then
+        doRebirth()
+        task.wait(1)
     end
 end)
 
