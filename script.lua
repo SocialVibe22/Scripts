@@ -35,24 +35,28 @@ local State = {
     autoRebirth = false
 }
 
--- Direct orb collection without teleporting
+-- Fixed orb collection function
 local function collectOrbs()
     if not State.autoOrbs then return end
     
     pcall(function()
         -- Collect main orbs
-        for _, orb in ipairs(workspace.orbFolder:GetChildren()) do
+        for _, orb in pairs(workspace.orbFolder:GetChildren()) do
             if orb:IsA("Part") then
-                ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", orb)
+                firetouchinterest(rootPart, orb, 0)
+                task.wait()
+                firetouchinterest(rootPart, orb, 1)
             end
         end
         
         -- Collect world orbs
-        for _, world in ipairs(workspace:GetChildren()) do
+        for _, world in pairs(workspace:GetChildren()) do
             if world.Name:match("World") then
-                for _, orb in ipairs(world:GetDescendants()) do
+                for _, orb in pairs(world:GetDescendants()) do
                     if orb:IsA("Part") and orb.Name == "outerOrb" then
-                        ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", orb)
+                        firetouchinterest(rootPart, orb, 0)
+                        task.wait()
+                        firetouchinterest(rootPart, orb, 1)
                     end
                 end
             end
@@ -60,25 +64,27 @@ local function collectOrbs()
     end)
 end
 
--- Direct hoop collection without teleporting
+-- Fixed hoop collection function
 local function collectHoops()
     if not State.autoHoops then return end
     
     pcall(function()
-        for _, hoop in ipairs(workspace.Hoops:GetChildren()) do
+        for _, hoop in pairs(workspace.Hoops:GetChildren()) do
             if hoop:IsA("Part") then
-                ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", hoop)
+                firetouchinterest(rootPart, hoop, 0)
+                task.wait()
+                firetouchinterest(rootPart, hoop, 1)
             end
         end
     end)
 end
 
--- Rebirth function
+-- Fixed rebirth function
 local function doRebirth()
     if not State.autoRebirth then return end
     
     pcall(function()
-        ReplicatedStorage.rEvents.rebirthEvent:FireServer("rebirthRequest")
+        game:GetService("ReplicatedStorage").rEvents.rebirthEvent:FireServer("rebirthRequest")
     end)
 end
 
@@ -133,18 +139,22 @@ MainTab:CreateToggle({
     end
 })
 
--- Main collection loop
-RunService.Heartbeat:Connect(function()
-    if State.autoOrbs then
-        collectOrbs()
-    end
-    
-    if State.autoHoops then
-        collectHoops()
-    end
-    
-    if State.autoRebirth then
-        doRebirth()
+-- Main collection loop with error handling
+spawn(function()
+    while true do
+        if State.autoOrbs then
+            collectOrbs()
+        end
+        
+        if State.autoHoops then
+            collectHoops()
+        end
+        
+        if State.autoRebirth then
+            doRebirth()
+        end
+        
+        task.wait(0.1)
     end
 end)
 
