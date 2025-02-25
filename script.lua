@@ -5,8 +5,8 @@ repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local VirtualUser = game:GetService("VirtualUser")
 
 local player = Players.LocalPlayer
@@ -17,17 +17,17 @@ local rootPart = character:WaitForChild("HumanoidRootPart")
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Ultimate Script Hub",
+    Name = "Legends Speed Hub V2",
     LoadingTitle = "Loading...",
     LoadingSubtitle = "by Master",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "UltimateHub",
+        FolderName = "LegendsSpeedHub",
         FileName = "Config"
     }
 })
 
-local LegendsSpeedTab = Window:CreateTab("Legends of Speed")
+local LegendsSpeedTab = Window:CreateTab("Legends Speed")
 
 local function createStatsDisplay()
     local statsGui = Instance.new("ScreenGui")
@@ -117,7 +117,7 @@ LegendsSpeedTab:CreateToggle({
 LegendsSpeedTab:CreateToggle({
     Name = "Auto Rebirth",
     CurrentValue = false,
-    Flag = "AutoRebirth",
+    Flag = "AutoRebirth", 
     Callback = function(Value)
         getgenv().AutoRebirth = Value
         while getgenv().AutoRebirth do
