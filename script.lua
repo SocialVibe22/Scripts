@@ -37,6 +37,7 @@ local State = {
     lastHoopPosition = nil
 }
 
+-- Fixed orb collection function
 local function collectOrbs()
     if not State.autoOrbs then return end
     
@@ -45,10 +46,20 @@ local function collectOrbs()
     -- Collect main orbs
     for _, orb in ipairs(workspace.orbFolder:GetChildren()) do
         if orb:IsA("Part") and State.autoOrbs then
-            rootPart.CFrame = orb.CFrame
-            ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", orb)
-            State.lastOrbPosition = orb.Position
+            -- Fixed: Properly touch the orb
+            firetouchinterest(rootPart, orb, 0)
             task.wait()
+            firetouchinterest(rootPart, orb, 1)
+            
+            -- Fixed: Send proper collection event
+            local args = {
+                [1] = "collectOrb",
+                [2] = orb
+            }
+            ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+            
+            State.lastOrbPosition = orb.Position
+            task.wait(0.1)
         end
     end
     
@@ -57,10 +68,20 @@ local function collectOrbs()
         if world.Name:match("World") then
             for _, orb in ipairs(world:GetDescendants()) do
                 if orb:IsA("Part") and orb.Name == "outerOrb" and State.autoOrbs then
-                    rootPart.CFrame = orb.CFrame
-                    ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", orb)
-                    State.lastOrbPosition = orb.Position
+                    -- Fixed: Properly touch the orb
+                    firetouchinterest(rootPart, orb, 0)
                     task.wait()
+                    firetouchinterest(rootPart, orb, 1)
+                    
+                    -- Fixed: Send proper collection event
+                    local args = {
+                        [1] = "collectOrb",
+                        [2] = orb
+                    }
+                    ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+                    
+                    State.lastOrbPosition = orb.Position
+                    task.wait(0.1)
                 end
             end
         end
@@ -69,6 +90,7 @@ local function collectOrbs()
     rootPart.CFrame = oldPos
 end
 
+-- Fixed hoop collection function
 local function collectHoops()
     if not State.autoHoops then return end
     
@@ -76,10 +98,21 @@ local function collectHoops()
     
     for _, hoop in ipairs(workspace.Hoops:GetChildren()) do
         if hoop:IsA("Part") and State.autoHoops then
-            rootPart.CFrame = hoop.CFrame
-            ReplicatedStorage.rEvents.orbEvent:FireServer("collectOrb", hoop)
-            State.lastHoopPosition = hoop.Position
+            -- Fixed: Properly touch the hoop
+            firetouchinterest(rootPart, hoop, 0)
             task.wait()
+            firetouchinterest(rootPart, hoop, 1)
+            
+            -- Fixed: Send proper collection event
+            local args = {
+                [1] = "collectOrb",
+                [2] = hoop
+            }
+            ReplicatedStorage.rEvents.orbEvent:FireServer(unpack(args))
+            
+            -- Fixed: Add proper delay
+            State.lastHoopPosition = hoop.Position
+            task.wait(0.1)
         end
     end
     
@@ -182,17 +215,21 @@ StatsTab:CreateToggle({
     end
 })
 
+-- Fixed main loop with proper delays
 RunService.Heartbeat:Connect(function()
     if State.autoOrbs then
         collectOrbs()
+        task.wait(0.1) -- Added delay to prevent overwhelming
     end
     
     if State.autoHoops then
         collectHoops()
+        task.wait(0.1) -- Added delay to prevent overwhelming
     end
     
     if State.autoRebirth then
         ReplicatedStorage.rEvents.rebirthEvent:FireServer("rebirthRequest")
+        task.wait(1) -- Added longer delay for rebirth
     end
     
     if State.lastOrbPosition then
