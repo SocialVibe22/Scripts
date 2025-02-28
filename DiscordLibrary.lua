@@ -1,44 +1,35 @@
---[[
-    Discord-Style Cheat Menu UI Library for Roblox
-    
-    This library creates a Discord-inspired UI for cheat menus in Roblox games,
-    with a sidebar, channels, categories, and a content area for controls.
-]]
-
 local DiscordCheatUI = {}
 DiscordCheatUI.__index = DiscordCheatUI
 
--- Constants for styling (Discord colors)
 local COLORS = {
-    BACKGROUND = Color3.fromRGB(54, 57, 63),      -- Main background
-    SIDEBAR = Color3.fromRGB(47, 49, 54),         -- Sidebar background
-    CHANNEL_LIST = Color3.fromRGB(47, 49, 54),    -- Channel list background
-    CHANNEL = Color3.fromRGB(142, 146, 151),      -- Channel text
-    CHANNEL_HOVER = Color3.fromRGB(255, 255, 255),-- Channel hover text
-    CATEGORY = Color3.fromRGB(142, 146, 151),     -- Category text
-    SELECTED = Color3.fromRGB(255, 255, 255),     -- Selected channel text
-    SELECTED_BG = Color3.fromRGB(66, 70, 77),     -- Selected channel background
-    TEXT = Color3.fromRGB(255, 255, 255),         -- General text
-    BUTTON = Color3.fromRGB(88, 101, 242),        -- Button color (Discord blurple)
-    BUTTON_HOVER = Color3.fromRGB(71, 82, 196),   -- Button hover color
-    TOGGLE_ON = Color3.fromRGB(67, 181, 129),     -- Toggle switch on
-    TOGGLE_OFF = Color3.fromRGB(114, 118, 125),   -- Toggle switch off
-    SLIDER_BG = Color3.fromRGB(32, 34, 37),       -- Slider background
-    SLIDER_FILL = Color3.fromRGB(88, 101, 242),   -- Slider fill
-    INPUT_BG = Color3.fromRGB(64, 68, 75),        -- Input background
-    HEADER = Color3.fromRGB(32, 34, 37),          -- Header background
-    EMBED = Color3.fromRGB(47, 49, 54),           -- Embed background
-    EMBED_ACCENT = Color3.fromRGB(88, 101, 242),  -- Embed accent color
-    SERVER_BG = Color3.fromRGB(32, 34, 37),       -- Server icon background
-    SERVER_SELECTED = Color3.fromRGB(255, 255, 255), -- Selected server outline
-    MEMBER_LIST_BG = Color3.fromRGB(47, 49, 54),  -- Member list background
-    MEMBER_HOVER = Color3.fromRGB(66, 70, 77)     -- Member hover background
-}
-
-local PADDING = {
-    SIDEBAR = UDim2.new(0, 10, 0, 10),
-    CATEGORY = UDim2.new(0, 10, 0, 5),
-    CHANNEL = UDim2.new(0, 25, 0, 5)
+    BACKGROUND = Color3.fromRGB(54, 57, 63),
+    SIDEBAR = Color3.fromRGB(47, 49, 54),
+    CHANNEL_LIST = Color3.fromRGB(47, 49, 54),
+    CHANNEL = Color3.fromRGB(142, 146, 151),
+    CHANNEL_HOVER = Color3.fromRGB(255, 255, 255),
+    CATEGORY = Color3.fromRGB(142, 146, 151),
+    SELECTED = Color3.fromRGB(255, 255, 255),
+    SELECTED_BG = Color3.fromRGB(66, 70, 77),
+    TEXT = Color3.fromRGB(255, 255, 255),
+    BUTTON = Color3.fromRGB(88, 101, 242),
+    BUTTON_HOVER = Color3.fromRGB(71, 82, 196),
+    TOGGLE_ON = Color3.fromRGB(67, 181, 129),
+    TOGGLE_OFF = Color3.fromRGB(114, 118, 125),
+    SLIDER_BG = Color3.fromRGB(32, 34, 37),
+    SLIDER_FILL = Color3.fromRGB(88, 101, 242),
+    INPUT_BG = Color3.fromRGB(64, 68, 75),
+    HEADER = Color3.fromRGB(32, 34, 37),
+    EMBED = Color3.fromRGB(47, 49, 54),
+    EMBED_ACCENT = Color3.fromRGB(88, 101, 242),
+    SERVER_BG = Color3.fromRGB(32, 34, 37),
+    SERVER_SELECTED = Color3.fromRGB(88, 101, 242),
+    TOOLTIP_BG = Color3.fromRGB(32, 34, 37),
+    SCROLLBAR = Color3.fromRGB(80, 83, 90),
+    MODAL_BG = Color3.fromRGB(0, 0, 0, 0.7),
+    MODAL_CONTENT = Color3.fromRGB(54, 57, 63),
+    SUCCESS = Color3.fromRGB(67, 181, 129),
+    ERROR = Color3.fromRGB(240, 71, 71),
+    WARNING = Color3.fromRGB(250, 166, 26)
 }
 
 local FONT = Enum.Font.SourceSansSemibold
@@ -46,20 +37,462 @@ local TEXT_SIZE = {
     CATEGORY = 12,
     CHANNEL = 14,
     HEADER = 16,
-    CONTENT = 14
+    CONTENT = 14,
+    SERVER = 12
 }
 
--- Icons (using Unicode characters as placeholders)
 local ICONS = {
     SETTINGS = "⚙️",
     HASHTAG = "#",
     TOGGLE_ON = "✓",
     TOGGLE_OFF = "✗",
     DROPDOWN = "▼",
-    DROPDOWN_OPEN = "▲"
+    DROPDOWN_OPEN = "▲",
+    CLOSE = "✕",
+    PLUS = "+",
+    MINUS = "-",
+    SEARCH = "🔍",
+    INFO = "ℹ️",
+    WARNING = "⚠️",
+    ERROR = "❌",
+    SUCCESS = "✓",
+    LOCK = "🔒",
+    UNLOCK = "🔓",
+    REFRESH = "🔄",
+    LINK = "🔗",
+    COPY = "📋",
+    EDIT = "✏️",
+    DELETE = "🗑️",
+    SAVE = "💾",
+    CANCEL = "✕",
+    USER = "👤",
+    USERS = "👥",
+    SERVER = "🖥️",
+    HOME = "🏠",
+    MENU = "☰",
+    NOTIFICATION = "🔔",
+    MUTE = "🔕",
+    PIN = "📌",
+    STAR = "⭐",
+    HEART = "❤️",
+    CLOCK = "🕒",
+    CALENDAR = "📅",
+    MAIL = "📧",
+    PHONE = "📱",
+    CAMERA = "📷",
+    MICROPHONE = "🎤",
+    MUSIC = "🎵",
+    GAME = "🎮",
+    GLOBE = "🌐",
+    SHIELD = "🛡️",
+    KEY = "🔑",
+    ROCKET = "🚀",
+    FIRE = "🔥",
+    LIGHTNING = "⚡",
+    MAGIC = "✨",
+    CROWN = "👑"
 }
 
--- Create a new Discord-style cheat menu
+local ANIMATIONS = {
+    DURATION = {
+        SHORT = 0.15,
+        MEDIUM = 0.25,
+        LONG = 0.5
+    },
+    EASING = {
+        LINEAR = Enum.EasingStyle.Linear,
+        QUAD = Enum.EasingStyle.Quad,
+        CUBIC = Enum.EasingStyle.Cubic,
+        QUART = Enum.EasingStyle.Quart,
+        QUINT = Enum.EasingStyle.Quint,
+        SINE = Enum.EasingStyle.Sine,
+        BACK = Enum.EasingStyle.Back,
+        ELASTIC = Enum.EasingStyle.Elastic,
+        BOUNCE = Enum.EasingStyle.Bounce
+    },
+    DIRECTION = {
+        IN = Enum.EasingDirection.In,
+        OUT = Enum.EasingDirection.Out,
+        INOUT = Enum.EasingDirection.InOut
+    }
+}
+
+local function tween(instance, properties, duration, style, direction)
+    duration = duration or ANIMATIONS.DURATION.MEDIUM
+    style = style or ANIMATIONS.EASING.QUAD
+    direction = direction or ANIMATIONS.DIRECTION.OUT
+    
+    local tweenInfo = TweenInfo.new(duration, style, direction)
+    local tween = game:GetService("TweenService"):Create(instance, tweenInfo, properties)
+    tween:Play()
+    return tween
+end
+
+local function createRippleEffect(button)
+    local ripple = Instance.new("Frame")
+    ripple.Name = "Ripple"
+    ripple.AnchorPoint = Vector2.new(0.5, 0.5)
+    ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ripple.BackgroundTransparency = 0.8
+    ripple.BorderSizePixel = 0
+    ripple.ZIndex = button.ZIndex + 1
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = ripple
+    
+    button.MouseButton1Down:Connect(function(x, y)
+        local buttonAbsoluteSize = button.AbsoluteSize
+        local buttonAbsolutePosition = button.AbsolutePosition
+        
+        local mousePosition = Vector2.new(x, y)
+        local relativePosition = mousePosition - buttonAbsolutePosition
+        
+        local maxSize = math.max(buttonAbsoluteSize.X, buttonAbsoluteSize.Y) * 2
+        
+        ripple.Size = UDim2.new(0, 0, 0, 0)
+        ripple.Position = UDim2.new(0, relativePosition.X, 0, relativePosition.Y)
+        ripple.Parent = button
+        
+        tween(ripple, {
+            Size = UDim2.new(0, maxSize, 0, maxSize),
+            BackgroundTransparency = 1
+        }, ANIMATIONS.DURATION.MEDIUM, ANIMATIONS.EASING.QUAD, ANIMATIONS.DIRECTION.OUT).Completed:Connect(function()
+            ripple:Destroy()
+        end)
+    end)
+end
+
+local function createShadow(parent, transparency, offset)
+    transparency = transparency or 0.5
+    offset = offset or 10
+    
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    shadow.BackgroundTransparency = 1
+    shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    shadow.Size = UDim2.new(1, offset, 1, offset)
+    shadow.ZIndex = parent.ZIndex - 1
+    shadow.Image = "rbxassetid://6014261993"
+    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.ImageTransparency = transparency
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+    shadow.Parent = parent
+    
+    return shadow
+end
+
+local function createTooltip(parent, text)
+    local tooltip = Instance.new("Frame")
+    tooltip.Name = "Tooltip"
+    tooltip.Size = UDim2.new(0, 200, 0, 30)
+    tooltip.BackgroundColor3 = COLORS.TOOLTIP_BG
+    tooltip.BorderSizePixel = 0
+    tooltip.Visible = false
+    tooltip.ZIndex = 100
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = tooltip
+    
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Size = UDim2.new(1, -10, 1, 0)
+    label.Position = UDim2.new(0, 5, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Font = FONT
+    label.TextSize = TEXT_SIZE.CONTENT
+    label.TextColor3 = COLORS.TEXT
+    label.TextXAlignment = Enum.TextXAlignment.Center
+    label.Text = text
+    label.ZIndex = 101
+    label.Parent = tooltip
+    
+    tooltip.Parent = parent.Parent
+    
+    parent.MouseEnter:Connect(function()
+        tooltip.Position = UDim2.new(0, parent.AbsolutePosition.X + parent.AbsoluteSize.X + 5, 0, parent.AbsolutePosition.Y)
+        tooltip.Visible = true
+    end)
+    
+    parent.MouseLeave:Connect(function()
+        tooltip.Visible = false
+    end)
+    
+    return tooltip
+end
+
+local function createNotification(parent, title, message, type, duration)
+    type = type or "info"
+    duration = duration or 5
+    
+    local colors = {
+        info = COLORS.EMBED_ACCENT,
+        success = COLORS.SUCCESS,
+        warning = COLORS.WARNING,
+        error = COLORS.ERROR
+    }
+    
+    local icons = {
+        info = ICONS.INFO,
+        success = ICONS.SUCCESS,
+        warning = ICONS.WARNING,
+        error = ICONS.ERROR
+    }
+    
+    local notification = Instance.new("Frame")
+    notification.Name = "Notification"
+    notification.Size = UDim2.new(0, 300, 0, 80)
+    notification.Position = UDim2.new(1, 10, 1, -90)
+    notification.BackgroundColor3 = COLORS.EMBED
+    notification.BorderSizePixel = 0
+    notification.ZIndex = 1000
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = notification
+    
+    local accent = Instance.new("Frame")
+    accent.Name = "Accent"
+    accent.Size = UDim2.new(0, 4, 1, 0)
+    accent.BackgroundColor3 = colors[type]
+    accent.BorderSizePixel = 0
+    accent.ZIndex = 1001
+    
+    local accentCorner = Instance.new("UICorner")
+    accentCorner.CornerRadius = UDim.new(0, 4)
+    accentCorner.Parent = accent
+    
+    accent.Parent = notification
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.Size = UDim2.new(1, -50, 0, 30)
+    titleLabel.Position = UDim2.new(0, 40, 0, 5)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Font = FONT
+    titleLabel.TextSize = TEXT_SIZE.HEADER
+    titleLabel.TextColor3 = COLORS.TEXT
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Text = title
+    titleLabel.ZIndex = 1001
+    titleLabel.Parent = notification
+    
+    local messageLabel = Instance.new("TextLabel")
+    messageLabel.Name = "Message"
+    messageLabel.Size = UDim2.new(1, -20, 0, 40)
+    messageLabel.Position = UDim2.new(0, 10, 0, 35)
+    messageLabel.BackgroundTransparency = 1
+    messageLabel.Font = FONT
+    messageLabel.TextSize = TEXT_SIZE.CONTENT
+    messageLabel.TextColor3 = COLORS.TEXT
+    messageLabel.TextXAlignment = Enum.TextXAlignment.Left
+    messageLabel.TextWrapped = true
+    messageLabel.Text = message
+    messageLabel.ZIndex = 1001
+    messageLabel.Parent = notification
+    
+    local iconLabel = Instance.new("TextLabel")
+    iconLabel.Name = "Icon"
+    iconLabel.Size = UDim2.new(0, 30, 0, 30)
+    iconLabel.Position = UDim2.new(0, 5, 0, 5)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Font = FONT
+    iconLabel.TextSize = 20
+    iconLabel.TextColor3 = colors[type]
+    iconLabel.Text = icons[type]
+    iconLabel.ZIndex = 1001
+    iconLabel.Parent = notification
+    
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 20, 0, 20)
+    closeButton.Position = UDim2.new(1, -25, 0, 5)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Font = FONT
+    closeButton.TextSize = 16
+    closeButton.TextColor3 = COLORS.TEXT
+    closeButton.Text = ICONS.CLOSE
+    closeButton.ZIndex = 1001
+    closeButton.Parent = notification
+    
+    createShadow(notification, 0.5, 10)
+    
+    notification.Parent = parent
+    
+    tween(notification, {
+        Position = UDim2.new(1, -310, 1, -90)
+    }, ANIMATIONS.DURATION.MEDIUM, ANIMATIONS.EASING.BACK, ANIMATIONS.DIRECTION.OUT)
+    
+    closeButton.MouseButton1Click:Connect(function()
+        tween(notification, {
+            Position = UDim2.new(1, 10, 1, -90)
+        }, ANIMATIONS.DURATION.MEDIUM, ANIMATIONS.EASING.QUAD, ANIMATIONS.DIRECTION.IN).Completed:Connect(function()
+            notification:Destroy()
+        end)
+    end)
+    
+    task.delay(duration, function()
+        if notification and notification.Parent then
+            tween(notification, {
+                Position = UDim2.new(1, 10, 1, -90)
+            }, ANIMATIONS.DURATION.MEDIUM, ANIMATIONS.EASING.QUAD, ANIMATIONS.DIRECTION.IN).Completed:Connect(function()
+                if notification and notification.Parent then
+                    notification:Destroy()
+                end
+            end)
+        end
+    end)
+    
+    return notification
+end
+
+local function createModal(parent, title, content, buttons)
+    local modalBackground = Instance.new("Frame")
+    modalBackground.Name = "ModalBackground"
+    modalBackground.Size = UDim2.new(1, 0, 1, 0)
+    modalBackground.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    modalBackground.BackgroundTransparency = 0.7
+    modalBackground.BorderSizePixel = 0
+    modalBackground.ZIndex = 1000
+    
+    local modal = Instance.new("Frame")
+    modal.Name = "Modal"
+    modal.Size = UDim2.new(0, 400, 0, 250)
+    modal.Position = UDim2.new(0.5, -200, 0.5, -125)
+    modal.BackgroundColor3 = COLORS.MODAL_CONTENT
+    modal.BorderSizePixel = 0
+    modal.ZIndex = 1001
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = modal
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.Size = UDim2.new(1, -20, 0, 40)
+    titleLabel.Position = UDim2.new(0, 10, 0, 10)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Font = FONT
+    titleLabel.TextSize = TEXT_SIZE.HEADER
+    titleLabel.TextColor3 = COLORS.TEXT
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Text = title
+    titleLabel.ZIndex = 1002
+    titleLabel.Parent = modal
+    
+    local separator = Instance.new("Frame")
+    separator.Name = "Separator"
+    separator.Size = UDim2.new(1, -20, 0, 1)
+    separator.Position = UDim2.new(0, 10, 0, 50)
+    separator.BackgroundColor3 = Color3.fromRGB(80, 83, 90)
+    separator.BorderSizePixel = 0
+    separator.ZIndex = 1002
+    separator.Parent = modal
+    
+    local contentLabel = Instance.new("TextLabel")
+    contentLabel.Name = "Content"
+    contentLabel.Size = UDim2.new(1, -20, 0, 140)
+    contentLabel.Position = UDim2.new(0, 10, 0, 60)
+    contentLabel.BackgroundTransparency = 1
+    contentLabel.Font = FONT
+    contentLabel.TextSize = TEXT_SIZE.CONTENT
+    contentLabel.TextColor3 = COLORS.TEXT
+    contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+    contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+    contentLabel.TextWrapped = true
+    contentLabel.Text = content
+    contentLabel.ZIndex = 1002
+    contentLabel.Parent = modal
+    
+    local buttonContainer = Instance.new("Frame")
+    buttonContainer.Name = "ButtonContainer"
+    buttonContainer.Size = UDim2.new(1, -20, 0, 40)
+    buttonContainer.Position = UDim2.new(0, 10, 1, -50)
+    buttonContainer.BackgroundTransparency = 1
+    buttonContainer.ZIndex = 1002
+    buttonContainer.Parent = modal
+    
+    local buttonLayout = Instance.new("UIListLayout")
+    buttonLayout.FillDirection = Enum.FillDirection.Horizontal
+    buttonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    buttonLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    buttonLayout.Padding = UDim.new(0, 10)
+    buttonLayout.Parent = buttonContainer
+    
+    for i, buttonInfo in ipairs(buttons) do
+        local button = Instance.new("TextButton")
+        button.Name = "Button_" .. buttonInfo.text
+        button.Size = UDim2.new(0, 100, 0, 40)
+        button.BackgroundColor3 = buttonInfo.primary and COLORS.BUTTON or COLORS.INPUT_BG
+        button.BorderSizePixel = 0
+        button.Font = FONT
+        button.TextSize = TEXT_SIZE.CONTENT
+        button.TextColor3 = COLORS.TEXT
+        button.Text = buttonInfo.text
+        button.LayoutOrder = i
+        button.ZIndex = 1003
+        
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 4)
+        buttonCorner.Parent = button
+        
+        button.MouseEnter:Connect(function()
+            tween(button, {
+                BackgroundColor3 = buttonInfo.primary and COLORS.BUTTON_HOVER or Color3.fromRGB(80, 83, 90)
+            }, ANIMATIONS.DURATION.SHORT)
+        end)
+        
+        button.MouseLeave:Connect(function()
+            tween(button, {
+                BackgroundColor3 = buttonInfo.primary and COLORS.BUTTON or COLORS.INPUT_BG
+            }, ANIMATIONS.DURATION.SHORT)
+        end)
+        
+        button.MouseButton1Click:Connect(function()
+            if buttonInfo.callback then
+                buttonInfo.callback()
+            end
+            
+            tween(modalBackground, {
+                BackgroundTransparency = 1
+            }, ANIMATIONS.DURATION.MEDIUM)
+            
+            tween(modal, {
+                Position = UDim2.new(0.5, -200, 0.5, -125 - 50),
+                BackgroundTransparency = 1
+            }, ANIMATIONS.DURATION.MEDIUM).Completed:Connect(function()
+                modalBackground:Destroy()
+            end)
+        end)
+        
+        createRippleEffect(button)
+        button.Parent = buttonContainer
+    end
+    
+    createShadow(modal, 0.5, 20)
+    
+    modal.Parent = modalBackground
+    modalBackground.Parent = parent
+    
+    modal.Position = UDim2.new(0.5, -200, 0.5, -125 - 50)
+    modal.BackgroundTransparency = 1
+    modalBackground.BackgroundTransparency = 1
+    
+    tween(modalBackground, {
+        BackgroundTransparency = 0.7
+    }, ANIMATIONS.DURATION.MEDIUM)
+    
+    tween(modal, {
+        Position = UDim2.new(0.5, -200, 0.5, -125),
+        BackgroundTransparency = 0
+    }, ANIMATIONS.DURATION.MEDIUM, ANIMATIONS.EASING.BACK, ANIMATIONS.DIRECTION.OUT)
+    
+    return modalBackground
+end
+
 function DiscordCheatUI.new(player)
     local self = setmetatable({}, DiscordCheatUI)
     
@@ -68,26 +501,29 @@ function DiscordCheatUI.new(player)
     self.channels = {}
     self.callbacks = {}
     self.selectedChannel = nil
-    self.selectedServer = nil
     self.controls = {}
     self.servers = {}
-    self.serverCallbacks = {}
+    self.selectedServer = nil
+    self.notifications = {}
     
-    -- Create the main UI
     self:CreateMainUI()
     
     return self
 end
 
--- Create the main UI elements
+function DiscordCheatUI.newWithServers(player)
+    local self = DiscordCheatUI.new(player)
+    self.useServers = true
+    self:CreateServerBar()
+    return self
+end
+
 function DiscordCheatUI:CreateMainUI()
-    -- Create ScreenGui
     self.gui = Instance.new("ScreenGui")
     self.gui.Name = "DiscordCheatUI"
     self.gui.ResetOnSpawn = false
     self.gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- Create main frame
     self.mainFrame = Instance.new("Frame")
     self.mainFrame.Name = "MainFrame"
     self.mainFrame.Size = UDim2.new(0.8, 0, 0.8, 0)
@@ -96,86 +532,19 @@ function DiscordCheatUI:CreateMainUI()
     self.mainFrame.BorderSizePixel = 0
     self.mainFrame.Parent = self.gui
     
-    -- Add corner radius
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = self.mainFrame
     
-    -- Add shadow effect
-    local shadow = Instance.new("ImageLabel")
-    shadow.Name = "Shadow"
-    shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-    shadow.BackgroundTransparency = 1
-    shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    shadow.Size = UDim2.new(1, 20, 1, 20)
-    shadow.ZIndex = -1
-    shadow.Image = "rbxassetid://6014261993" -- Shadow image
-    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    shadow.ImageTransparency = 0.5
-    shadow.ScaleType = Enum.ScaleType.Slice
-    shadow.SliceCenter = Rect.new(49, 49, 450, 450)
-    shadow.Parent = self.mainFrame
+    createShadow(self.mainFrame)
     
-    -- Create server list
-    self.serverList = Instance.new("Frame")
-    self.serverList.Name = "ServerList"
-    self.serverList.Size = UDim2.new(0.06, 0, 1, 0)
-    self.serverList.BackgroundColor3 = COLORS.SERVER_BG
-    self.serverList.BorderSizePixel = 0
-    self.serverList.Parent = self.mainFrame
-    
-    -- Add corner radius to server list (only left corners)
-    local serverListCorner = Instance.new("UICorner")
-    serverListCorner.CornerRadius = UDim.new(0, 8)
-    serverListCorner.Parent = self.serverList
-    
-    -- Create a frame to cover the right corners of the server list
-    local serverCoverFrame = Instance.new("Frame")
-    serverCoverFrame.Size = UDim2.new(0.5, 0, 1, 0)
-    serverCoverFrame.Position = UDim2.new(0.5, 0, 0, 0)
-    serverCoverFrame.BackgroundColor3 = COLORS.SERVER_BG
-    serverCoverFrame.BorderSizePixel = 0
-    serverCoverFrame.ZIndex = 2
-    serverCoverFrame.Parent = self.serverList
-    
-    -- Create scrolling frame for servers
-    self.serverScrollFrame = Instance.new("ScrollingFrame")
-    self.serverScrollFrame.Name = "ServerScrollFrame"
-    self.serverScrollFrame.Size = UDim2.new(1, 0, 1, 0)
-    self.serverScrollFrame.BackgroundTransparency = 1
-    self.serverScrollFrame.BorderSizePixel = 0
-    self.serverScrollFrame.ScrollBarThickness = 0
-    self.serverScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- Will be updated as we add servers
-    self.serverScrollFrame.Parent = self.serverList
-    
-    -- Add auto-layout for the server scroll frame
-    local serverLayout = Instance.new("UIListLayout")
-    serverLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    serverLayout.Padding = UDim.new(0, 10)
-    serverLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    serverLayout.Parent = self.serverScrollFrame
-    
-    -- Add padding to the server scroll frame
-    local serverPadding = Instance.new("UIPadding")
-    serverPadding.PaddingTop = UDim.new(0, 10)
-    serverPadding.PaddingBottom = UDim.new(0, 10)
-    serverPadding.Parent = self.serverScrollFrame
-    
-    -- Update canvas size when layout changes
-    serverLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.serverScrollFrame.CanvasSize = UDim2.new(0, 0, 0, serverLayout.AbsoluteContentSize.Y + 20)
-    end)
-    
-    -- Create top bar (server name area in Discord)
     self.topBar = Instance.new("Frame")
     self.topBar.Name = "TopBar"
     self.topBar.Size = UDim2.new(0.2, 0, 0.06, 0)
-    self.topBar.Position = UDim2.new(0.06, 0, 0, 0)
     self.topBar.BackgroundColor3 = COLORS.SIDEBAR
     self.topBar.BorderSizePixel = 0
     self.topBar.Parent = self.mainFrame
     
-    -- Add top bar title
     self.topBarTitle = Instance.new("TextLabel")
     self.topBarTitle.Name = "Title"
     self.topBarTitle.Size = UDim2.new(1, -20, 1, 0)
@@ -188,36 +557,44 @@ function DiscordCheatUI:CreateMainUI()
     self.topBarTitle.Text = "CHEAT MENU"
     self.topBarTitle.Parent = self.topBar
     
-    -- Create sidebar
     self.sidebar = Instance.new("Frame")
     self.sidebar.Name = "Sidebar"
     self.sidebar.Size = UDim2.new(0.2, 0, 0.94, 0)
-    self.sidebar.Position = UDim2.new(0.06, 0, 0.06, 0)
+    self.sidebar.Position = UDim2.new(0, 0, 0.06, 0)
     self.sidebar.BackgroundColor3 = COLORS.SIDEBAR
     self.sidebar.BorderSizePixel = 0
     self.sidebar.Parent = self.mainFrame
     
-    -- Create scrolling frame for channels and categories
+    local sidebarCorner = Instance.new("UICorner")
+    sidebarCorner.CornerRadius = UDim.new(0, 8)
+    sidebarCorner.Parent = self.sidebar
+    
+    local coverFrame = Instance.new("Frame")
+    coverFrame.Size = UDim2.new(0.5, 0, 1, 0)
+    coverFrame.Position = UDim2.new(0.5, 0, 0, 0)
+    coverFrame.BackgroundColor3 = COLORS.SIDEBAR
+    coverFrame.BorderSizePixel = 0
+    coverFrame.ZIndex = 2
+    coverFrame.Parent = self.sidebar
+    
     self.scrollFrame = Instance.new("ScrollingFrame")
     self.scrollFrame.Name = "ChannelList"
     self.scrollFrame.Size = UDim2.new(1, 0, 1, 0)
     self.scrollFrame.BackgroundTransparency = 1
     self.scrollFrame.BorderSizePixel = 0
     self.scrollFrame.ScrollBarThickness = 4
-    self.scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 83, 90)
-    self.scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0) -- Will be updated as we add items
+    self.scrollFrame.ScrollBarImageColor3 = COLORS.SCROLLBAR
+    self.scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
     self.scrollFrame.Parent = self.sidebar
     
-    -- Create channel header
     self.channelHeader = Instance.new("Frame")
     self.channelHeader.Name = "ChannelHeader"
-    self.channelHeader.Size = UDim2.new(0.54, 0, 0.06, 0)
-    self.channelHeader.Position = UDim2.new(0.26, 0, 0, 0)
+    self.channelHeader.Size = UDim2.new(0.8, 0, 0.06, 0)
+    self.channelHeader.Position = UDim2.new(0.2, 0, 0, 0)
     self.channelHeader.BackgroundColor3 = COLORS.HEADER
     self.channelHeader.BorderSizePixel = 0
     self.channelHeader.Parent = self.mainFrame
     
-    -- Add separator line
     local separator = Instance.new("Frame")
     separator.Name = "Separator"
     separator.Size = UDim2.new(1, 0, 0, 1)
@@ -226,7 +603,6 @@ function DiscordCheatUI:CreateMainUI()
     separator.BorderSizePixel = 0
     separator.Parent = self.channelHeader
     
-    -- Create channel name label
     self.channelNameLabel = Instance.new("TextLabel")
     self.channelNameLabel.Name = "ChannelName"
     self.channelNameLabel.Size = UDim2.new(1, -20, 1, 0)
@@ -239,91 +615,17 @@ function DiscordCheatUI:CreateMainUI()
     self.channelNameLabel.Text = "Select a channel"
     self.channelNameLabel.Parent = self.channelHeader
     
-    -- Create content frame
     self.content = Instance.new("ScrollingFrame")
     self.content.Name = "Content"
-    self.content.Size = UDim2.new(0.54, 0, 0.94, 0)
-    self.content.Position = UDim2.new(0.26, 0, 0.06, 0)
+    self.content.Size = UDim2.new(0.8, 0, 0.94, 0)
+    self.content.Position = UDim2.new(0.2, 0, 0.06, 0)
     self.content.BackgroundColor3 = COLORS.BACKGROUND
     self.content.BorderSizePixel = 0
     self.content.ScrollBarThickness = 4
-    self.content.ScrollBarImageColor3 = Color3.fromRGB(80, 83, 90)
+    self.content.ScrollBarImageColor3 = COLORS.SCROLLBAR
     self.content.CanvasSize = UDim2.new(0, 0, 0, 0)
     self.content.Parent = self.mainFrame
     
-    -- Create member list
-    self.memberList = Instance.new("Frame")
-    self.memberList.Name = "MemberList"
-    self.memberList.Size = UDim2.new(0.2, 0, 1, 0)
-    self.memberList.Position = UDim2.new(0.8, 0, 0, 0)
-    self.memberList.BackgroundColor3 = COLORS.MEMBER_LIST_BG
-    self.memberList.BorderSizePixel = 0
-    self.memberList.Parent = self.mainFrame
-    
-    -- Add corner radius to member list (only right corners)
-    local memberListCorner = Instance.new("UICorner")
-    memberListCorner.CornerRadius = UDim.new(0, 8)
-    memberListCorner.Parent = self.memberList
-    
-    -- Create a frame to cover the left corners of the member list
-    local memberCoverFrame = Instance.new("Frame")
-    memberCoverFrame.Size = UDim2.new(0.5, 0, 1, 0)
-    memberCoverFrame.Position = UDim2.new(0, 0, 0, 0)
-    memberCoverFrame.BackgroundColor3 = COLORS.MEMBER_LIST_BG
-    memberCoverFrame.BorderSizePixel = 0
-    memberCoverFrame.ZIndex = 2
-    memberCoverFrame.Parent = self.memberList
-    
-    -- Create member list header
-    local memberListHeader = Instance.new("TextLabel")
-    memberListHeader.Name = "MemberListHeader"
-    memberListHeader.Size = UDim2.new(1, 0, 0.06, 0)
-    memberListHeader.BackgroundColor3 = COLORS.MEMBER_LIST_BG
-    memberListHeader.BorderSizePixel = 0
-    memberListHeader.Font = FONT
-    memberListHeader.TextSize = TEXT_SIZE.CATEGORY
-    memberListHeader.TextColor3 = COLORS.CATEGORY
-    memberListHeader.Text = "MEMBERS"
-    memberListHeader.TextXAlignment = Enum.TextXAlignment.Left
-    memberListHeader.Parent = self.memberList
-    
-    -- Add padding to the member list header
-    local memberHeaderPadding = Instance.new("UIPadding")
-    memberHeaderPadding.PaddingLeft = UDim.new(0, 10)
-    memberHeaderPadding.Parent = memberListHeader
-    
-    -- Create scrolling frame for members
-    self.memberScrollFrame = Instance.new("ScrollingFrame")
-    self.memberScrollFrame.Name = "MemberScrollFrame"
-    self.memberScrollFrame.Size = UDim2.new(1, 0, 0.94, 0)
-    self.memberScrollFrame.Position = UDim2.new(0, 0, 0.06, 0)
-    self.memberScrollFrame.BackgroundTransparency = 1
-    self.memberScrollFrame.BorderSizePixel = 0
-    self.memberScrollFrame.ScrollBarThickness = 4
-    self.memberScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(80, 83, 90)
-    self.memberScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    self.memberScrollFrame.Parent = self.memberList
-    
-    -- Add auto-layout for the member scroll frame
-    local memberLayout = Instance.new("UIListLayout")
-    memberLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    memberLayout.Padding = UDim.new(0, 5)
-    memberLayout.Parent = self.memberScrollFrame
-    
-    -- Add padding to the member scroll frame
-    local memberPadding = Instance.new("UIPadding")
-    memberPadding.PaddingTop = UDim.new(0, 10)
-    memberPadding.PaddingBottom = UDim.new(0, 10)
-    memberPadding.PaddingLeft = UDim.new(0, 10)
-    memberPadding.PaddingRight = UDim.new(0, 10)
-    memberPadding.Parent = self.memberScrollFrame
-    
-    -- Update canvas size when layout changes
-    memberLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.memberScrollFrame.CanvasSize = UDim2.new(0, 0, 0, memberLayout.AbsoluteContentSize.Y + 20)
-    end)
-    
-    -- Create welcome message
     self.welcomeMessage = Instance.new("TextLabel")
     self.welcomeMessage.Name = "WelcomeMessage"
     self.welcomeMessage.Size = UDim2.new(1, -40, 0, 100)
@@ -336,13 +638,11 @@ function DiscordCheatUI:CreateMainUI()
     self.welcomeMessage.Text = "Welcome to the Discord-style cheat menu! Select a channel from the sidebar to access different cheat options."
     self.welcomeMessage.Parent = self.content
     
-    -- Add auto-layout for the scroll frame
     local layout = Instance.new("UIListLayout")
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Padding = UDim.new(0, 5)
     layout.Parent = self.scrollFrame
     
-    -- Add padding to the scroll frame
     local padding = Instance.new("UIPadding")
     padding.PaddingTop = UDim.new(0, 10)
     padding.PaddingBottom = UDim.new(0, 10)
@@ -350,13 +650,11 @@ function DiscordCheatUI:CreateMainUI()
     padding.PaddingRight = UDim.new(0, 10)
     padding.Parent = self.scrollFrame
     
-    -- Add auto-layout for the content frame
     local contentLayout = Instance.new("UIListLayout")
     contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
     contentLayout.Padding = UDim.new(0, 10)
     contentLayout.Parent = self.content
     
-    -- Add padding to the content frame
     local contentPadding = Instance.new("UIPadding")
     contentPadding.PaddingTop = UDim.new(0, 20)
     contentPadding.PaddingBottom = UDim.new(0, 20)
@@ -364,7 +662,6 @@ function DiscordCheatUI:CreateMainUI()
     contentPadding.PaddingRight = UDim.new(0, 20)
     contentPadding.Parent = self.content
     
-    -- Update canvas size when layout changes
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         self.scrollFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
     end)
@@ -373,86 +670,117 @@ function DiscordCheatUI:CreateMainUI()
         self.content.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 40)
     end)
     
-    -- Populate member list
-    self:UpdateMemberList()
-    
-    -- Make the UI draggable
     self:MakeDraggable(self.mainFrame, self.topBar)
-    self:MakeDraggable(self.mainFrame, self.channelHeader)
-end
-
--- Update the member list with all players in the game
-function DiscordCheatUI:UpdateMemberList()
-    -- Clear existing members
-    for _, child in pairs(self.memberScrollFrame:GetChildren()) do
-        if child:IsA("Frame") then
-            child:Destroy()
-        end
-    end
     
-    -- Add all players
-    local players = game:GetService("Players"):GetPlayers()
-    for i, player in ipairs(players) do
-        local memberFrame = Instance.new("Frame")
-        memberFrame.Name = "Member_" .. player.Name
-        memberFrame.Size = UDim2.new(1, 0, 0, 40)
-        memberFrame.BackgroundTransparency = 1
-        memberFrame.LayoutOrder = i
-        
-        local memberAvatar = Instance.new("ImageLabel")
-        memberAvatar.Name = "Avatar"
-        memberAvatar.Size = UDim2.new(0, 30, 0, 30)
-        memberAvatar.Position = UDim2.new(0, 0, 0, 5)
-        memberAvatar.BackgroundColor3 = COLORS.BACKGROUND
-        memberAvatar.BorderSizePixel = 0
-        
-        -- Add corner radius to avatar
-        local avatarCorner = Instance.new("UICorner")
-        avatarCorner.CornerRadius = UDim.new(1, 0)
-        avatarCorner.Parent = memberAvatar
-        
-        -- Try to load player avatar
-        local success, _ = pcall(function()
-            memberAvatar.Image = game:GetService("Players"):GetUserThumbnailAsync(
-                player.UserId,
-                Enum.ThumbnailType.HeadShot,
-                Enum.ThumbnailSize.Size48x48
-            )
-        end)
-        
-        if not success then
-            memberAvatar.BackgroundColor3 = Color3.fromRGB(math.random(100, 255), math.random(100, 255), math.random(100, 255))
-        end
-        
-        memberAvatar.Parent = memberFrame
-        
-        local memberName = Instance.new("TextLabel")
-        memberName.Name = "Name"
-        memberName.Size = UDim2.new(1, -40, 1, 0)
-        memberName.Position = UDim2.new(0, 40, 0, 0)
-        memberName.BackgroundTransparency = 1
-        memberName.Font = FONT
-        memberName.TextSize = TEXT_SIZE.CONTENT
-        memberName.TextColor3 = COLORS.TEXT
-        memberName.TextXAlignment = Enum.TextXAlignment.Left
-        memberName.Text = player.Name
-        memberName.Parent = memberFrame
-        
-        -- Add hover effect
-        memberFrame.MouseEnter:Connect(function()
-            memberFrame.BackgroundTransparency = 0
-            memberFrame.BackgroundColor3 = COLORS.MEMBER_HOVER
-        end)
-        
-        memberFrame.MouseLeave:Connect(function()
-            memberFrame.BackgroundTransparency = 1
-        end)
-        
-        memberFrame.Parent = self.memberScrollFrame
-    end
+    self.notificationContainer = Instance.new("Frame")
+    self.notificationContainer.Name = "NotificationContainer"
+    self.notificationContainer.Size = UDim2.new(1, 0, 1, 0)
+    self.notificationContainer.BackgroundTransparency = 1
+    self.notificationContainer.Parent = self.gui
 end
 
--- Make a UI element draggable
+function DiscordCheatUI:CreateServerBar()
+    self.serverBar = Instance.new("Frame")
+    self.serverBar.Name = "ServerBar"
+    self.serverBar.Size = UDim2.new(0.06, 0, 1, 0)
+    self.serverBar.BackgroundColor3 = COLORS.SERVER_BG
+    self.serverBar.BorderSizePixel = 0
+    self.serverBar.Parent = self.mainFrame
+    
+    local serverBarCorner = Instance.new("UICorner")
+    serverBarCorner.CornerRadius = UDim.new(0, 8)
+    serverBarCorner.Parent = self.serverBar
+    
+    local coverFrame = Instance.new("Frame")
+    coverFrame.Size = UDim2.new(0.5, 0, 1, 0)
+    coverFrame.Position = UDim2.new(0.5, 0, 0, 0)
+    coverFrame.BackgroundColor3 = COLORS.SERVER_BG
+    coverFrame.BorderSizePixel = 0
+    coverFrame.ZIndex = 2
+    coverFrame.Parent = self.serverBar
+    
+    local separator = Instance.new("Frame")
+    separator.Name = "Separator"
+    separator.Size = UDim2.new(0.7, 0, 0, 2)
+    separator.Position = UDim2.new(0.15, 0, 0, 70)
+    separator.BackgroundColor3 = Color3.fromRGB(60, 63, 69)
+    separator.BorderSizePixel = 0
+    separator.Parent = self.serverBar
+    
+    self.serverScroll = Instance.new("ScrollingFrame")
+    self.serverScroll.Name = "ServerScroll"
+    self.serverScroll.Size = UDim2.new(1, 0, 1, -80)
+    self.serverScroll.Position = UDim2.new(0, 0, 0, 80)
+    self.serverScroll.BackgroundTransparency = 1
+    self.serverScroll.BorderSizePixel = 0
+    self.serverScroll.ScrollBarThickness = 0
+    self.serverScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    self.serverScroll.Parent = self.serverBar
+    
+    local serverLayout = Instance.new("UIListLayout")
+    serverLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    serverLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    serverLayout.Padding = UDim.new(0, 10)
+    serverLayout.Parent = self.serverScroll
+    
+    local serverPadding = Instance.new("UIPadding")
+    serverPadding.PaddingTop = UDim.new(0, 10)
+    serverPadding.PaddingBottom = UDim.new(0, 10)
+    serverPadding.Parent = self.serverScroll
+    
+    serverLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.serverScroll.CanvasSize = UDim2.new(0, 0, 0, serverLayout.AbsoluteContentSize.Y + 20)
+    end)
+    
+    local homeButton = Instance.new("TextButton")
+    homeButton.Name = "HomeButton"
+    homeButton.Size = UDim2.new(0, 40, 0, 40)
+    homeButton.Position = UDim2.new(0.5, -20, 0, 15)
+    homeButton.BackgroundColor3 = COLORS.BUTTON
+    homeButton.BorderSizePixel = 0
+    homeButton.Font = FONT
+    homeButton.TextSize = 18
+    homeButton.TextColor3 = COLORS.TEXT
+    homeButton.Text = ICONS.HOME
+    homeButton.Parent = self.serverBar
+    
+    local homeCorner = Instance.new("UICorner")
+    homeCorner.CornerRadius = UDim.new(1, 0)
+    homeCorner.Parent = homeButton
+    
+    homeButton.MouseButton1Click:Connect(function()
+        self:SelectServer("HOME")
+    end)
+    
+    createRippleEffect(homeButton)
+    
+    self.mainFrame.Size = UDim2.new(0.8, 0, 0.8, 0)
+    self.topBar.Size = UDim2.new(0.2, 0, 0.06, 0)
+    self.topBar.Position = UDim2.new(0.06, 0, 0, 0)
+    self.sidebar.Size = UDim2.new(0.2, 0, 0.94, 0)
+    self.sidebar.Position = UDim2.new(0.06, 0, 0.06, 0)
+    self.channelHeader.Size = UDim2.new(0.74, 0, 0.06, 0)
+    self.channelHeader.Position = UDim2.new(0.26, 0, 0, 0)
+    self.content.Size = UDim2.new(0.74, 0, 0.94, 0)
+    self.content.Position = UDim2.new(0.26, 0, 0.06, 0)
+    
+    self:AddServer("HOME", "H", function()
+        self:AddCategory("WELCOME")
+        self:AddChannel("welcome", function()
+            self:AddSectionTitle("Welcome to Discord Cheat Menu")
+            self:AddEmbed("Getting Started", "This Discord-style cheat menu provides various hacks and tools for your game. Select a server from the sidebar to access different categories of cheats.", COLORS.EMBED_ACCENT, {
+                {name = "Navigation", value = "Use the server icons on the left to switch between different cheat categories."},
+                {name = "Channels", value = "Each server contains channels with specific cheat functions."},
+                {name = "Controls", value = "Interact with buttons, sliders, and toggles to activate cheats."}
+            })
+            
+            self:AddButton("Show Tutorial", function()
+                self:ShowNotification("Tutorial", "Click on the server icons on the left to navigate between different cheat categories. Each server contains channels with specific cheat functions.", "info", 10)
+            end)
+        end)
+    end)
+end
+
 function DiscordCheatUI:MakeDraggable(frame, dragArea)
     local dragging = false
     local dragInput
@@ -491,111 +819,119 @@ function DiscordCheatUI:MakeDraggable(frame, dragArea)
     end)
 end
 
--- Add a server to the menu
-function DiscordCheatUI:AddServer(name, shortName, callback)
+function DiscordCheatUI:AddServer(name, icon, callback)
+    if not self.useServers then
+        self.useServers = true
+        self:CreateServerBar()
+    end
+    
     local layoutOrder = #self.servers + 1
     
-    -- Create server button
     local serverButton = Instance.new("TextButton")
     serverButton.Name = "Server_" .. name
-    serverButton.Size = UDim2.new(0, 48, 0, 48)
+    serverButton.Size = UDim2.new(0, 40, 0, 40)
     serverButton.BackgroundColor3 = COLORS.SIDEBAR
     serverButton.BorderSizePixel = 0
-    serverButton.Text = shortName or string.sub(name, 1, 1)
     serverButton.Font = FONT
-    serverButton.TextSize = 18
+    serverButton.TextSize = TEXT_SIZE.SERVER
     serverButton.TextColor3 = COLORS.TEXT
+    serverButton.Text = icon or string.sub(name, 1, 1)
     serverButton.LayoutOrder = layoutOrder
     
-    -- Add corner radius
     local serverCorner = Instance.new("UICorner")
     serverCorner.CornerRadius = UDim.new(1, 0)
     serverCorner.Parent = serverButton
     
-    -- Add selection indicator
-    local selectionIndicator = Instance.new("Frame")
-    selectionIndicator.Name = "SelectionIndicator"
-    selectionIndicator.Size = UDim2.new(0, 4, 0, 40)
-    selectionIndicator.Position = UDim2.new(0, -10, 0.5, -20)
-    selectionIndicator.BackgroundColor3 = COLORS.SERVER_SELECTED
-    selectionIndicator.BorderSizePixel = 0
-    selectionIndicator.Visible = false
+    local indicator = Instance.new("Frame")
+    indicator.Name = "Indicator"
+    indicator.Size = UDim2.new(0, 5, 0, 0)
+    indicator.Position = UDim2.new(0, -10, 0.5, 0)
+    indicator.BackgroundColor3 = COLORS.TEXT
+    indicator.BorderSizePixel = 0
+    indicator.Visible = false
+    indicator.Parent = serverButton
     
-    -- Add corner radius to selection indicator
     local indicatorCorner = Instance.new("UICorner")
     indicatorCorner.CornerRadius = UDim.new(0, 2)
-    indicatorCorner.Parent = selectionIndicator
+    indicatorCorner.Parent = indicator
     
-    selectionIndicator.Parent = serverButton
-    
-    -- Add hover effect
     serverButton.MouseEnter:Connect(function()
         if self.selectedServer ~= name then
-            serverButton.BackgroundColor3 = COLORS.CHANNEL_HOVER
+            tween(serverButton, {
+                BackgroundColor3 = Color3.fromRGB(80, 83, 90)
+            }, ANIMATIONS.DURATION.SHORT)
+            
+            if indicator.Size.Y.Offset == 0 then
+                indicator.Position = UDim2.new(0, -10, 0.5, -10)
+                indicator.Size = UDim2.new(0, 5, 0, 20)
+                indicator.Visible = true
+            end
         end
     end)
     
     serverButton.MouseLeave:Connect(function()
         if self.selectedServer ~= name then
-            serverButton.BackgroundColor3 = COLORS.SIDEBAR
+            tween(serverButton, {
+                BackgroundColor3 = COLORS.SIDEBAR
+            }, ANIMATIONS.DURATION.SHORT)
+            
+            tween(indicator, {
+                Size = UDim2.new(0, 5, 0, 0),
+                Position = UDim2.new(0, -10, 0.5, 0)
+            }, ANIMATIONS.DURATION.SHORT).Completed:Connect(function()
+                if indicator.Size.Y.Offset == 0 then
+                    indicator.Visible = false
+                end
+            end)
         end
     end)
     
-    -- Add click event
     serverButton.MouseButton1Click:Connect(function()
         self:SelectServer(name)
+        
         if callback then
             callback()
         end
     end)
     
-    serverButton.Parent = self.serverScrollFrame
+    createRippleEffect(serverButton)
+    createTooltip(serverButton, name)
+    
+    serverButton.Parent = self.serverScroll
     
     table.insert(self.servers, {
         name = name,
         instance = serverButton,
-        indicator = selectionIndicator,
+        indicator = indicator,
+        callback = callback,
         layoutOrder = layoutOrder
     })
     
-    self.serverCallbacks[name] = callback
+    if name == "HOME" and not self.selectedServer then
+        self:SelectServer(name)
+        if callback then
+            callback()
+        end
+    end
     
     return self
 end
 
--- Select a server
 function DiscordCheatUI:SelectServer(name)
-    -- Reset previous selection
-    if self.selectedServer then
-        local prevServer = self:FindServerByName(self.selectedServer)
-        if prevServer and prevServer.instance then
-            prevServer.instance.BackgroundColor3 = COLORS.SIDEBAR
-            prevServer.indicator.Visible = false
+    for _, category in ipairs(self.categories) do
+        if category.instance then
+            category.instance:Destroy()
         end
     end
-    
-    -- Set new selection
-    self.selectedServer = name
-    local server = self:FindServerByName(name)
-    if server and server.instance then
-        server.instance.BackgroundColor3 = COLORS.BUTTON
-        server.indicator.Visible = true
-    end
-    
-    -- Update top bar title
-    self.topBarTitle.Text = name
-    
-    -- Clear channels
-    for _, child in pairs(self.scrollFrame:GetChildren()) do
-        if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-            child:Destroy()
-        end
-    end
-    
     self.categories = {}
+    
+    for _, channel in ipairs(self.channels) do
+        if channel.instance then
+            channel.instance:Destroy()
+        end
+    end
     self.channels = {}
     
-    -- Clear content
     for _, control in pairs(self.controls) do
         if control.instance then
             control.instance:Destroy()
@@ -603,21 +939,48 @@ function DiscordCheatUI:SelectServer(name)
     end
     self.controls = {}
     
-    -- Reset selected channel
+    if self.selectedServer then
+        local prevServer = self:FindServerByName(self.selectedServer)
+        if prevServer and prevServer.instance then
+            tween(prevServer.instance, {
+                BackgroundColor3 = COLORS.SIDEBAR
+            }, ANIMATIONS.DURATION.SHORT)
+            
+            if prevServer.indicator then
+                tween(prevServer.indicator, {
+                    Size = UDim2.new(0, 5, 0, 0),
+                    Position = UDim2.new(0, -10, 0.5, 0)
+                }, ANIMATIONS.DURATION.SHORT).Completed:Connect(function()
+                    if prevServer.indicator.Size.Y.Offset == 0 then
+                        prevServer.indicator.Visible = false
+                    end
+                end)
+            end
+        end
+    }
+    
+    self.selectedServer = name
     self.selectedChannel = nil
+    
+    local server = self:FindServerByName(name)
+    if server and server.instance then
+        tween(server.instance, {
+            BackgroundColor3 = COLORS.SERVER_SELECTED
+        }, ANIMATIONS.DURATION.SHORT)
+        
+        if server.indicator then
+            server.indicator.Position = UDim2.new(0, -10, 0.5, -15)
+            server.indicator.Size = UDim2.new(0, 5, 0, 30)
+            server.indicator.Visible = true
+        end
+    end
+    
     self.channelNameLabel.Text = "Select a channel"
     self.welcomeMessage.Visible = true
-    
-    -- Call server callback to set up channels
-    local callback = self.serverCallbacks[name]
-    if callback then
-        callback()
-    end
     
     return self
 end
 
--- Find a server by name
 function DiscordCheatUI:FindServerByName(name)
     for _, server in ipairs(self.servers) do
         if server.name == name then
@@ -627,11 +990,9 @@ function DiscordCheatUI:FindServerByName(name)
     return nil
 end
 
--- Add a category to the menu
 function DiscordCheatUI:AddCategory(name)
     local layoutOrder = #self.categories + #self.channels + 1
     
-    -- Create category label
     local category = Instance.new("TextLabel")
     category.Name = "Category_" .. name
     category.Size = UDim2.new(1, -10, 0, 25)
@@ -647,17 +1008,15 @@ function DiscordCheatUI:AddCategory(name)
     table.insert(self.categories, {
         name = name,
         instance = category,
-        layoutOrder = layoutOrder
+        layoutOrder = layout Order = layoutOrder
     })
     
     return self
 end
 
--- Add a channel to the menu
 function DiscordCheatUI:AddChannel(name, callback)
     local layoutOrder = #self.categories + #self.channels + 1
     
-    -- Create channel button container
     local channelContainer = Instance.new("Frame")
     channelContainer.Name = "ChannelContainer_" .. name
     channelContainer.Size = UDim2.new(1, -10, 0, 30)
@@ -665,7 +1024,6 @@ function DiscordCheatUI:AddChannel(name, callback)
     channelContainer.LayoutOrder = layoutOrder
     channelContainer.Parent = self.scrollFrame
     
-    -- Create channel button
     local channel = Instance.new("TextButton")
     channel.Name = "Channel_" .. name
     channel.Size = UDim2.new(1, 0, 1, 0)
@@ -677,7 +1035,6 @@ function DiscordCheatUI:AddChannel(name, callback)
     channel.Text = "# " .. name
     channel.Parent = channelContainer
     
-    -- Create selection indicator
     local selectionIndicator = Instance.new("Frame")
     selectionIndicator.Name = "SelectionIndicator"
     selectionIndicator.Size = UDim2.new(1, 0, 1, 0)
@@ -686,33 +1043,36 @@ function DiscordCheatUI:AddChannel(name, callback)
     selectionIndicator.ZIndex = 0
     selectionIndicator.Visible = false
     
-    -- Add corner radius to selection indicator
     local indicatorCorner = Instance.new("UICorner")
     indicatorCorner.CornerRadius = UDim.new(0, 4)
     indicatorCorner.Parent = selectionIndicator
     
     selectionIndicator.Parent = channelContainer
     
-    -- Add hover effect
     channel.MouseEnter:Connect(function()
         if self.selectedChannel ~= name then
-            channel.TextColor3 = COLORS.CHANNEL_HOVER
+            tween(channel, {
+                TextColor3 = COLORS.CHANNEL_HOVER
+            }, ANIMATIONS.DURATION.SHORT)
         end
     end)
     
     channel.MouseLeave:Connect(function()
         if self.selectedChannel ~= name then
-            channel.TextColor3 = COLORS.CHANNEL
+            tween(channel, {
+                TextColor3 = COLORS.CHANNEL
+            }, ANIMATIONS.DURATION.SHORT)
         end
     end)
     
-    -- Add click event
     channel.MouseButton1Click:Connect(function()
         self:SelectChannel(name)
         if callback then
             callback()
         end
     end)
+    
+    createRippleEffect(channel)
     
     table.insert(self.channels, {
         name = name,
@@ -727,32 +1087,44 @@ function DiscordCheatUI:AddChannel(name, callback)
     return self
 end
 
--- Select a channel
 function DiscordCheatUI:SelectChannel(name)
-    -- Reset previous selection
     if self.selectedChannel then
         local prevChannel = self:FindChannelByName(self.selectedChannel)
         if prevChannel and prevChannel.instance then
-            prevChannel.instance.TextColor3 = COLORS.CHANNEL
-            prevChannel.indicator.Visible = false
+            tween(prevChannel.instance, {
+                TextColor3 = COLORS.CHANNEL
+            }, ANIMATIONS.DURATION.SHORT)
+            
+            if prevChannel.indicator then
+                tween(prevChannel.indicator, {
+                    BackgroundTransparency = 1
+                }, ANIMATIONS.DURATION.SHORT).Completed:Connect(function()
+                    prevChannel.indicator.Visible = false
+                end)
+            end
         end
-    end
+    }
     
-    -- Set new selection
     self.selectedChannel = name
     local channel = self:FindChannelByName(name)
     if channel and channel.instance then
-        channel.instance.TextColor3 = COLORS.SELECTED
-        channel.indicator.Visible = true
+        tween(channel.instance, {
+            TextColor3 = COLORS.SELECTED
+        }, ANIMATIONS.DURATION.SHORT)
+        
+        if channel.indicator then
+            channel.indicator.BackgroundTransparency = 1
+            channel.indicator.Visible = true
+            tween(channel.indicator, {
+                BackgroundTransparency = 0
+            }, ANIMATIONS.DURATION.SHORT)
+        end
     end
     
-    -- Update header
     self.channelNameLabel.Text = "# " .. name
     
-    -- Hide welcome message
     self.welcomeMessage.Visible = false
     
-    -- Clear previous content
     for _, control in pairs(self.controls) do
         if control.instance then
             control.instance:Destroy()
@@ -763,7 +1135,6 @@ function DiscordCheatUI:SelectChannel(name)
     return self
 end
 
--- Find a channel by name
 function DiscordCheatUI:FindChannelByName(name)
     for _, channel in ipairs(self.channels) do
         if channel.name == name then
@@ -773,7 +1144,6 @@ function DiscordCheatUI:FindChannelByName(name)
     return nil
 end
 
--- Add a button control
 function DiscordCheatUI:AddButton(text, callback)
     if not self.selectedChannel then return self end
     
@@ -788,27 +1158,29 @@ function DiscordCheatUI:AddButton(text, callback)
     button.Text = text
     button.LayoutOrder = #self.controls + 1
     
-    -- Add corner radius
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 4)
     corner.Parent = button
     
-    -- Add hover effect
     button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON_HOVER
+        tween(button, {
+            BackgroundColor3 = COLORS.BUTTON_HOVER
+        }, ANIMATIONS.DURATION.SHORT)
     end)
     
     button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = COLORS.BUTTON
+        tween(button, {
+            BackgroundColor3 = COLORS.BUTTON
+        }, ANIMATIONS.DURATION.SHORT)
     end)
     
-    -- Add click event
     button.MouseButton1Click:Connect(function()
         if callback then
             callback()
         end
     end)
     
+    createRippleEffect(button)
     button.Parent = self.content
     
     table.insert(self.controls, {
@@ -819,7 +1191,6 @@ function DiscordCheatUI:AddButton(text, callback)
     return self
 end
 
--- Add a toggle control
 function DiscordCheatUI:AddToggle(text, initialState, callback)
     if not self.selectedChannel then return self end
     
@@ -849,7 +1220,6 @@ function DiscordCheatUI:AddToggle(text, initialState, callback)
     toggleBackground.BackgroundColor3 = initialState and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
     toggleBackground.BorderSizePixel = 0
     
-    -- Add corner radius
     local bgCorner = Instance.new("UICorner")
     bgCorner.CornerRadius = UDim.new(1, 0)
     bgCorner.Parent = toggleBackground
@@ -861,7 +1231,6 @@ function DiscordCheatUI:AddToggle(text, initialState, callback)
     toggleIndicator.BackgroundColor3 = COLORS.TEXT
     toggleIndicator.BorderSizePixel = 0
     
-    -- Add corner radius
     local indicatorCorner = Instance.new("UICorner")
     indicatorCorner.CornerRadius = UDim.new(1, 0)
     indicatorCorner.Parent = toggleIndicator
@@ -869,21 +1238,27 @@ function DiscordCheatUI:AddToggle(text, initialState, callback)
     toggleIndicator.Parent = toggleBackground
     toggleBackground.Parent = container
     
-    -- Make the toggle clickable
-    toggleBackground.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            initialState = not initialState
-            toggleBackground.BackgroundColor3 = initialState and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
-            toggleIndicator:TweenPosition(
-                UDim2.new(initialState and 0.6 or 0, 2, 0, 2),
-                Enum.EasingDirection.InOut,
-                Enum.EasingStyle.Quad,
-                0.2,
-                true
-            )
-            if callback then
-                callback(initialState)
-            end
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Name = "ToggleButton"
+    toggleButton.Size = UDim2.new(0, 40, 0, 20)
+    toggleButton.Position = UDim2.new(0.85, 0, 0.5, -10)
+    toggleButton.BackgroundTransparency = 1
+    toggleButton.Text = ""
+    toggleButton.Parent = container
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        initialState = not initialState
+        
+        tween(toggleBackground, {
+            BackgroundColor3 = initialState and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
+        }, ANIMATIONS.DURATION.SHORT)
+        
+        tween(toggleIndicator, {
+            Position = UDim2.new(initialState and 0.6 or 0, 2, 0, 2)
+        }, ANIMATIONS.DURATION.SHORT)
+        
+        if callback then
+            callback(initialState)
         end
     end)
     
@@ -898,7 +1273,6 @@ function DiscordCheatUI:AddToggle(text, initialState, callback)
     return self
 end
 
--- Add a slider control
 function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     if not self.selectedChannel then return self end
     
@@ -942,7 +1316,6 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     sliderBackground.BackgroundColor3 = COLORS.SLIDER_BG
     sliderBackground.BorderSizePixel = 0
     
-    -- Add corner radius
     local bgCorner = Instance.new("UICorner")
     bgCorner.CornerRadius = UDim.new(0, 5)
     bgCorner.Parent = sliderBackground
@@ -953,7 +1326,6 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     sliderFill.BackgroundColor3 = COLORS.SLIDER_FILL
     sliderFill.BorderSizePixel = 0
     
-    -- Add corner radius
     local fillCorner = Instance.new("UICorner")
     fillCorner.CornerRadius = UDim.new(0, 5)
     fillCorner.Parent = sliderFill
@@ -968,7 +1340,6 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     sliderButton.BorderSizePixel = 0
     sliderButton.Text = ""
     
-    -- Add corner radius
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(1, 0)
     buttonCorner.Parent = sliderButton
@@ -976,8 +1347,30 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     sliderButton.Parent = sliderBackground
     sliderBackground.Parent = container
     
-    -- Make the slider draggable
     local dragging = false
+    
+    local function updateSlider(mousePos)
+        local sliderPos = sliderBackground.AbsolutePosition.X
+        local sliderSize = sliderBackground.AbsoluteSize.X
+        
+        local relativePos = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
+        local value = min + relativePos * (max - min)
+        value = math.floor(value + 0.5)
+        
+        tween(sliderFill, {
+            Size = UDim2.new(relativePos, 0, 1, 0)
+        }, ANIMATIONS.DURATION.SHORT)
+        
+        tween(sliderButton, {
+            Position = UDim2.new(relativePos, -10, 0, -5)
+        }, ANIMATIONS.DURATION.SHORT)
+        
+        valueLabel.Text = tostring(value)
+        
+        if callback then
+            callback(value)
+        end
+    end
     
     sliderButton.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -994,42 +1387,13 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     sliderBackground.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
-            
-            local mousePos = input.Position.X
-            local sliderPos = sliderBackground.AbsolutePosition.X
-            local sliderSize = sliderBackground.AbsoluteSize.X
-            
-            local relativePos = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
-            local value = min + relativePos * (max - min)
-            value = math.floor(value + 0.5) -- Round to nearest integer
-            
-            sliderFill.Size = UDim2.new(relativePos, 0, 1, 0)
-            sliderButton.Position = UDim2.new(relativePos, -10, 0, -5)
-            valueLabel.Text = tostring(value)
-            
-            if callback then
-                callback(value)
-            end
+            updateSlider(input.Position.X)
         end
     end)
     
     game:GetService("UserInputService").InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mousePos = input.Position.X
-            local sliderPos = sliderBackground.AbsolutePosition.X
-            local sliderSize = sliderBackground.AbsoluteSize.X
-            
-            local relativePos = math.clamp((mousePos - sliderPos) / sliderSize, 0, 1)
-            local value = min + relativePos * (max - min)
-            value = math.floor(value + 0.5) -- Round to nearest integer
-            
-            sliderFill.Size = UDim2.new(relativePos, 0, 1, 0)
-            sliderButton.Position = UDim2.new(relativePos, -10, 0, -5)
-            valueLabel.Text = tostring(value)
-            
-            if callback then
-                callback(value)
-            end
+            updateSlider(input.Position.X)
         end
     end)
     
@@ -1041,7 +1405,7 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     
     container.Parent = self.content
     
-    table.insert(self. controls, {
+    table.insert(self.controls, {
         type = "slider",
         instance = container,
         value = initialValue
@@ -1050,7 +1414,6 @@ function DiscordCheatUI:AddSlider(text, min, max, initialValue, callback)
     return self
 end
 
--- Add a dropdown control
 function DiscordCheatUI:AddDropdown(text, options, initialSelection, callback)
     if not self.selectedChannel then return self end
     
@@ -1085,14 +1448,12 @@ function DiscordCheatUI:AddDropdown(text, options, initialSelection, callback)
     dropdownButton.TextColor3 = COLORS.TEXT
     dropdownButton.Text = initialSelection .. " " .. ICONS.DROPDOWN
     
-    -- Add corner radius
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 4)
     buttonCorner.Parent = dropdownButton
     
     dropdownButton.Parent = container
     
-    -- Create dropdown menu
     local dropdownMenu = Instance.new("Frame")
     dropdownMenu.Name = "DropdownMenu"
     dropdownMenu.Size = UDim2.new(0.6, 0, 0, #options * 30)
@@ -1102,12 +1463,10 @@ function DiscordCheatUI:AddDropdown(text, options, initialSelection, callback)
     dropdownMenu.Visible = false
     dropdownMenu.ZIndex = 10
     
-    -- Add corner radius
     local menuCorner = Instance.new("UICorner")
     menuCorner.CornerRadius = UDim.new(0, 4)
     menuCorner.Parent = dropdownMenu
     
-    -- Add options
     for i, option in ipairs(options) do
         local optionButton = Instance.new("TextButton")
         optionButton.Name = "Option_" .. option
@@ -1121,34 +1480,64 @@ function DiscordCheatUI:AddDropdown(text, options, initialSelection, callback)
         optionButton.ZIndex = 10
         
         optionButton.MouseEnter:Connect(function()
-            optionButton.BackgroundTransparency = 0.8
+            tween(optionButton, {
+                BackgroundTransparency = 0.8
+            }, ANIMATIONS.DURATION.SHORT)
         end)
         
         optionButton.MouseLeave:Connect(function()
-            optionButton.BackgroundTransparency = 1
+            tween(optionButton, {
+                BackgroundTransparency = 1
+            }, ANIMATIONS.DURATION.SHORT)
         end)
         
         optionButton.MouseButton1Click:Connect(function()
             dropdownButton.Text = option .. " " .. ICONS.DROPDOWN
-            dropdownMenu.Visible = false
+            
+            tween(dropdownMenu, {
+                Size = UDim2.new(0.6, 0, 0, 0),
+                Position = UDim2.new(0.4, 0, 1, 5)
+            }, ANIMATIONS.DURATION.SHORT).Completed:Connect(function()
+                dropdownMenu.Visible = false
+                dropdownMenu.Size = UDim2.new(0.6, 0, 0, #options * 30)
+            end)
             
             if callback then
                 callback(option)
             end
         end)
         
+        createRippleEffect(optionButton)
         optionButton.Parent = dropdownMenu
     end
     
     dropdownMenu.Parent = container
     
-    -- Toggle dropdown menu
     dropdownButton.MouseButton1Click:Connect(function()
-        dropdownMenu.Visible = not dropdownMenu.Visible
-        dropdownButton.Text = initialSelection .. " " .. (dropdownMenu.Visible and ICONS.DROPDOWN_OPEN or ICONS.DROPDOWN)
+        if dropdownMenu.Visible then
+            tween(dropdownMenu, {
+                Size = UDim2.new(0.6, 0, 0, 0),
+                Position = UDim2.new(0.4, 0, 1, 5)
+            }, ANIMATIONS.DURATION.SHORT).Completed:Connect(function()
+                dropdownMenu.Visible = false
+                dropdownMenu.Size = UDim2.new(0.6, 0, 0, #options * 30)
+            end)
+            
+            dropdownButton.Text = initialSelection .. " " .. ICONS.DROPDOWN
+        else
+            dropdownMenu.Size = UDim2.new(0.6, 0, 0, 0)
+            dropdownMenu.Position = UDim2.new(0.4, 0, 1, 5)
+            dropdownMenu.Visible = true
+            
+            tween(dropdownMenu, {
+                Size = UDim2.new(0.6, 0, 0, #options * 30),
+                Position = UDim2.new(0.4, 0, 1, 5)
+            }, ANIMATIONS.DURATION.SHORT)
+            
+            dropdownButton.Text = initialSelection .. " " .. ICONS.DROPDOWN_OPEN
+        end
     end)
     
-    -- Close dropdown when clicking elsewhere
     game:GetService("UserInputService").InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = game:GetService("UserInputService"):GetMouseLocation()
@@ -1166,12 +1555,20 @@ function DiscordCheatUI:AddDropdown(text, options, initialSelection, callback)
                 mousePos.X > dropdownButton.AbsolutePosition.X + dropdownButton.AbsoluteSize.X or
                 mousePos.Y > dropdownButton.AbsolutePosition.Y + dropdownButton.AbsoluteSize.Y
             ) then
-                dropdownMenu.Visible = false
+                tween(dropdownMenu, {
+                    Size = UDim2.new(0.6, 0, 0, 0),
+                    Position = UDim2.new(0.4, 0, 1, 5)
+                }, ANIMATIONS.DURATION.SHORT).Completed:Connect(function()
+                    dropdownMenu.Visible = false
+                    dropdownMenu.Size = UDim2.new(0.6, 0, 0, #options * 30)
+                end)
+                
                 dropdownButton.Text = initialSelection .. " " .. ICONS.DROPDOWN
             end
         end
     end)
     
+    createRippleEffect(dropdownButton)
     container.Parent = self.content
     
     table.insert(self.controls, {
@@ -1183,7 +1580,6 @@ function DiscordCheatUI:AddDropdown(text, options, initialSelection, callback)
     return self
 end
 
--- Add a text input control
 function DiscordCheatUI:AddTextInput(text, placeholder, initialValue, callback)
     if not self.selectedChannel then return self end
     
@@ -1220,18 +1616,26 @@ function DiscordCheatUI:AddTextInput(text, placeholder, initialValue, callback)
     inputBox.Text = initialValue
     inputBox.ClearTextOnFocus = false
     
-    -- Add corner radius
     local inputCorner = Instance.new("UICorner")
     inputCorner.CornerRadius = UDim.new(0, 4)
     inputCorner.Parent = inputBox
     
-    -- Add padding
     local inputPadding = Instance.new("UIPadding")
     inputPadding.PaddingLeft = UDim.new(0, 10)
     inputPadding.PaddingRight = UDim.new(0, 10)
     inputPadding.Parent = inputBox
     
+    inputBox.Focused:Connect(function()
+        tween(inputBox, {
+            BackgroundColor3 = Color3.fromRGB(80, 83, 90)
+        }, ANIMATIONS.DURATION.SHORT)
+    end)
+    
     inputBox.FocusLost:Connect(function(enterPressed)
+        tween(inputBox, {
+            BackgroundColor3 = COLORS.INPUT_BG
+        }, ANIMATIONS.DURATION.SHORT)
+        
         if callback then
             callback(inputBox.Text, enterPressed)
         end
@@ -1249,7 +1653,6 @@ function DiscordCheatUI:AddTextInput(text, placeholder, initialValue, callback)
     return self
 end
 
--- Add a section header
 function DiscordCheatUI:AddSectionTitle(text)
     if not self.selectedChannel then return self end
     
@@ -1264,7 +1667,6 @@ function DiscordCheatUI:AddSectionTitle(text)
     title.Text = text
     title.LayoutOrder = #self.controls + 1
     
-    -- Add separator line
     local separator = Instance.new("Frame")
     separator.Name = "Separator"
     separator.Size = UDim2.new(1, 0, 0, 1)
@@ -1283,7 +1685,6 @@ function DiscordCheatUI:AddSectionTitle(text)
     return self
 end
 
--- Add an embed (Discord-style message embed)
 function DiscordCheatUI:AddEmbed(title, description, color, fields)
     if not self.selectedChannel then return self end
     
@@ -1297,26 +1698,22 @@ function DiscordCheatUI:AddEmbed(title, description, color, fields)
     embed.BorderSizePixel = 0
     embed.LayoutOrder = #self.controls + 1
     
-    -- Add corner radius
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 4)
     corner.Parent = embed
     
-    -- Add accent bar
     local accent = Instance.new("Frame")
     accent.Name = "Accent"
     accent.Size = UDim2.new(0, 4, 1, 0)
     accent.BackgroundColor3 = color
     accent.BorderSizePixel = 0
     
-    -- Add corner radius to accent
     local accentCorner = Instance.new("UICorner")
     accentCorner.CornerRadius = UDim.new(0, 4)
     accentCorner.Parent = accent
     
     accent.Parent = embed
     
-    -- Add title
     local embedTitle = Instance.new("TextLabel")
     embedTitle.Name = "Title"
     embedTitle.Size = UDim2.new(1, -20, 0, 30)
@@ -1329,7 +1726,6 @@ function DiscordCheatUI:AddEmbed(title, description, color, fields)
     embedTitle.Text = title
     embedTitle.Parent = embed
     
-    -- Add description
     local embedDescription = Instance.new("TextLabel")
     embedDescription.Name = "Description"
     embedDescription.Size = UDim2.new(1, -20, 0, 40)
@@ -1343,7 +1739,6 @@ function DiscordCheatUI:AddEmbed(title, description, color, fields)
     embedDescription.Text = description
     embedDescription.Parent = embed
     
-    -- Add fields
     for i, field in ipairs(fields) do
         local fieldName = Instance.new("TextLabel")
         fieldName.Name = "FieldName_" .. i
@@ -1380,7 +1775,6 @@ function DiscordCheatUI:AddEmbed(title, description, color, fields)
     return self
 end
 
--- Add a keybind control
 function DiscordCheatUI:AddKeybind(text, defaultKey, callback)
     if not self.selectedChannel then return self end
     
@@ -1414,7 +1808,6 @@ function DiscordCheatUI:AddKeybind(text, defaultKey, callback)
     keyButton.TextColor3 = COLORS.TEXT
     keyButton.Text = defaultKey
     
-    -- Add corner radius
     local keyCorner = Instance.new("UICorner")
     keyCorner.CornerRadius = UDim.new(0, 4)
     keyCorner.Parent = keyButton
@@ -1429,12 +1822,21 @@ function DiscordCheatUI:AddKeybind(text, defaultKey, callback)
         listening = true
         keyButton.Text = "..."
         
+        tween(keyButton, {
+            BackgroundColor3 = COLORS.BUTTON
+        }, ANIMATIONS.DURATION.SHORT)
+        
         local connection
         connection = game:GetService("UserInputService").InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.Keyboard then
                 local keyName = string.sub(tostring(input.KeyCode), 14)
                 keyButton.Text = keyName
                 listening = false
+                
+                tween(keyButton, {
+                    BackgroundColor3 = COLORS.INPUT_BG
+                }, ANIMATIONS.DURATION.SHORT)
+                
                 connection:Disconnect()
                 
                 if callback then
@@ -1444,6 +1846,7 @@ function DiscordCheatUI:AddKeybind(text, defaultKey, callback)
         end)
     end)
     
+    createRippleEffect(keyButton)
     container.Parent = self.content
     
     table.insert(self.controls, {
@@ -1455,7 +1858,6 @@ function DiscordCheatUI:AddKeybind(text, defaultKey, callback)
     return self
 end
 
--- Add a color picker control
 function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     if not self.selectedChannel then return self end
     
@@ -1486,14 +1888,12 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     colorButton.BorderSizePixel = 0
     colorButton.Text = ""
     
-    -- Add corner radius
     local colorCorner = Instance.new("UICorner")
     colorCorner.CornerRadius = UDim.new(0, 4)
     colorCorner.Parent = colorButton
     
     colorButton.Parent = container
     
-    -- Create color picker popup
     local colorPicker = Instance.new("Frame")
     colorPicker.Name = "ColorPicker"
     colorPicker.Size = UDim2.new(0.8, 0, 0, 200)
@@ -1503,12 +1903,10 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     colorPicker.Visible = false
     colorPicker.ZIndex = 10
     
-    -- Add corner radius
     local pickerCorner = Instance.new("UICorner")
     pickerCorner.CornerRadius = UDim.new(0, 4)
     pickerCorner.Parent = colorPicker
     
-    -- Add color sliders (simplified for this example)
     local redSlider = Instance.new("Frame")
     redSlider.Name = "RedSlider"
     redSlider.Size = UDim2.new(0.9, 0, 0, 20)
@@ -1517,7 +1915,6 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     redSlider.BorderSizePixel = 0
     redSlider.ZIndex = 11
     
-    -- Add corner radius
     local redCorner = Instance.new("UICorner")
     redCorner.CornerRadius = UDim.new(0, 4)
     redCorner.Parent = redSlider
@@ -1532,7 +1929,6 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     greenSlider.BorderSizePixel = 0
     greenSlider.ZIndex = 11
     
-    -- Add corner radius
     local greenCorner = Instance.new("UICorner")
     greenCorner.CornerRadius = UDim.new(0, 4)
     greenCorner.Parent = greenSlider
@@ -1547,14 +1943,12 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     blueSlider.BorderSizePixel = 0
     blueSlider.ZIndex = 11
     
-    -- Add corner radius
     local blueCorner = Instance.new("UICorner")
     blueCorner.CornerRadius = UDim.new(0, 4)
     blueCorner.Parent = blueSlider
     
     blueSlider.Parent = colorPicker
     
-    -- Add apply button
     local applyButton = Instance.new("TextButton")
     applyButton.Name = "ApplyButton"
     applyButton.Size = UDim2.new(0.9, 0, 0, 30)
@@ -1567,7 +1961,6 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     applyButton.Text = "Apply"
     applyButton.ZIndex = 11
     
-    -- Add corner radius
     local applyCorner = Instance.new("UICorner")
     applyCorner.CornerRadius = UDim.new(0, 4)
     applyCorner.Parent = applyButton
@@ -1576,12 +1969,10 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     
     colorPicker.Parent = container
     
-    -- Toggle color picker
     colorButton.MouseButton1Click:Connect(function()
         colorPicker.Visible = not colorPicker.Visible
     end)
     
-    -- Apply button
     applyButton.MouseButton1Click:Connect(function()
         colorPicker.Visible = false
         
@@ -1590,6 +1981,8 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
         end
     end)
     
+    createRippleEffect(colorButton)
+    createRippleEffect(applyButton)
     container.Parent = self.content
     
     table.insert(self.controls, {
@@ -1601,196 +1994,30 @@ function DiscordCheatUI:AddColorPicker(text, defaultColor, callback)
     return self
 end
 
--- Show the menu
+function DiscordCheatUI:ShowNotification(title, message, type, duration)
+    return createNotification(self.notificationContainer, title, message, type, duration)
+end
+
+function DiscordCheatUI:ShowModal(title, content, buttons)
+    return createModal(self.gui, title, content, buttons)
+end
+
 function DiscordCheatUI:Show()
     self.gui.Parent = self.player:WaitForChild("PlayerGui")
     return self
 end
 
--- Hide the menu
 function DiscordCheatUI:Hide()
     self.gui.Parent = nil
     return self
 end
 
--- Toggle the menu visibility
 function DiscordCheatUI:Toggle()
     if self.gui.Parent then
         self:Hide()
     else
         self:Show()
     end
-    return self
-end
-
-function DiscordCheatUI:AddServer(name, icon, callback)
-    local serverButton = Instance.new("TextButton")
-    serverButton.Name = "Server_" .. name
-    serverButton.Size = UDim2.new(0, 50, 0, 50)
-    serverButton.Position = UDim2.new(0, 10, 0, 10 + (#self.servers * 60))
-    serverButton.BackgroundColor3 = COLORS.SIDEBAR
-    serverButton.BorderSizePixel = 0
-    serverButton.Text = icon or string.sub(name, 1, 1)
-    serverButton.Font = FONT
-    serverButton.TextSize = 20
-    serverButton.TextColor3 = COLORS.TEXT
-    
-    -- Add corner radius
-    local serverCorner = Instance.new("UICorner")
-    serverCorner.CornerRadius = UDim.new(0, 25)
-    serverCorner.Parent = serverButton
-    
-    -- Add hover effect
-    serverButton.MouseEnter:Connect(function()
-        serverButton:TweenSize(
-            UDim2.new(0, 55, 0, 55),
-            Enum.EasingDirection.Out,
-            Enum.EasingStyle.Quad,
-            0.2,
-            true
-        )
-    end)
-    
-    serverButton.MouseLeave:Connect(function()
-        serverButton:TweenSize(
-            UDim2.new(0, 50, 0, 50),
-            Enum.EasingDirection.Out,
-            Enum.EasingStyle.Quad,
-            0.2,
-            true
-        )
-    end)
-    
-    -- Add click event
-    serverButton.MouseButton1Click:Connect(function()
-        self:SelectServer(name)
-        if callback then
-            callback()
-        end
-    end)
-    
-    serverButton.Parent = self.serverList
-    
-    table.insert(self.servers, {
-        name = name,
-        instance = serverButton,
-        callback = callback
-    })
-    
-    -- Select this server if it's the first one
-    if #self.servers == 1 then
-        self:SelectServer(name)
-    end
-    
-    return self
-end
-
--- Select a server
-function DiscordCheatUI:SelectServer(name)
-    -- Reset previous selection
-    if self.selectedServer then
-        local prevServer = self:FindServerByName(self.selectedServer)
-        if prevServer and prevServer.instance then
-            prevServer.instance.BackgroundColor3 = COLORS.SIDEBAR
-        end
-    end
-    
-    -- Set new selection
-    self.selectedServer = name
-    local server = self:FindServerByName(name)
-    if server and server.instance then
-        server.instance.BackgroundColor3 = COLORS.BUTTON
-    end
-    
-    -- Clear channels and categories
-    for _, category in ipairs(self.categories) do
-        if category.instance then
-            category.instance:Destroy()
-        end
-    end
-    
-    for _, channel in ipairs(self.channels) do
-        if channel.instance then
-            channel.instance:Destroy()
-        end
-    end
-    
-    self.categories = {}
-    self.channels = {}
-    
-    -- Clear content
-    for _, control in pairs(self.controls) do
-        if control.instance then
-            control.instance:Destroy()
-        end
-    end
-    self.controls = {}
-    
-    -- Reset selected channel
-    self.selectedChannel = nil
-    self.channelNameLabel.Text = "Select a channel"
-    self.welcomeMessage.Visible = true
-    
-    -- Call server callback
-    local server = self:FindServerByName(name)
-    if server and server.callback then
-        server.callback()
-    end
-    
-    return self
-end
-
--- Find a server by name
-function DiscordCheatUI:FindServerByName(name)
-    for _, server in ipairs(self.servers) do
-        if server.name == name then
-            return server
-        end
-    end
-    return nil
-end
-
--- Initialize the UI with servers
-function DiscordCheatUI:Initialize()
-    -- Create server list
-    self.serverList = Instance.new("Frame")
-    self.serverList.Name = "ServerList"
-    self.serverList.Size = UDim2.new(0, 70, 1, 0)
-    self.serverList.BackgroundColor3 = COLORS.SIDEBAR
-    self.serverList.BorderSizePixel = 0
-    self.serverList.Parent = self.mainFrame
-    
-    -- Add corner radius to server list (only left corners)
-    local serverListCorner = Instance.new("UICorner")
-    serverListCorner.CornerRadius = UDim.new(0, 8)
-    serverListCorner.Parent = self.serverList
-    
-    -- Create a frame to cover the right corners of the server list
-    local coverFrame = Instance.new("Frame")
-    coverFrame.Size = UDim2.new(0.5, 0, 1, 0)
-    coverFrame.Position = UDim2.new(0.5, 0, 0, 0)
-    coverFrame.BackgroundColor3 = COLORS.SIDEBAR
-    coverFrame.BorderSizePixel = 0
-    coverFrame.ZIndex = 2
-    coverFrame.Parent = self.serverList
-    
-    -- Adjust sidebar position
-    self.sidebar.Size = UDim2.new(0.2, 0, 1, 0)
-    self.sidebar.Position = UDim2.new(0, 70, 0, 0)
-    
-    -- Adjust content area position
-    self.contentArea.Size = UDim2.new(0.8, -70, 1, 0)
-    self.contentArea.Position = UDim2.new(0.2, 70, 0, 0)
-    
-    self.servers = {}
-    
-    return self
-end
-
--- Create a new Discord-style cheat menu with servers
-function DiscordCheatUI.newWithServers(player)
-    local self = DiscordCheatUI.new(player)
-    self:Initialize()
     return self
 end
 
