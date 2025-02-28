@@ -1623,4 +1623,175 @@ function DiscordCheatUI:Toggle()
     return self
 end
 
+function DiscordCheatUI:AddServer(name, icon, callback)
+    local serverButton = Instance.new("TextButton")
+    serverButton.Name = "Server_" .. name
+    serverButton.Size = UDim2.new(0, 50, 0, 50)
+    serverButton.Position = UDim2.new(0, 10, 0, 10 + (#self.servers * 60))
+    serverButton.BackgroundColor3 = COLORS.SIDEBAR
+    serverButton.BorderSizePixel = 0
+    serverButton.Text = icon or string.sub(name, 1, 1)
+    serverButton.Font = FONT
+    serverButton.TextSize = 20
+    serverButton.TextColor3 = COLORS.TEXT
+    
+    -- Add corner radius
+    local serverCorner = Instance.new("UICorner")
+    serverCorner.CornerRadius = UDim.new(0, 25)
+    serverCorner.Parent = serverButton
+    
+    -- Add hover effect
+    serverButton.MouseEnter:Connect(function()
+        serverButton:TweenSize(
+            UDim2.new(0, 55, 0, 55),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Quad,
+            0.2,
+            true
+        )
+    end)
+    
+    serverButton.MouseLeave:Connect(function()
+        serverButton:TweenSize(
+            UDim2.new(0, 50, 0, 50),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Quad,
+            0.2,
+            true
+        )
+    end)
+    
+    -- Add click event
+    serverButton.MouseButton1Click:Connect(function()
+        self:SelectServer(name)
+        if callback then
+            callback()
+        end
+    end)
+    
+    serverButton.Parent = self.serverList
+    
+    table.insert(self.servers, {
+        name = name,
+        instance = serverButton,
+        callback = callback
+    })
+    
+    -- Select this server if it's the first one
+    if #self.servers == 1 then
+        self:SelectServer(name)
+    end
+    
+    return self
+end
+
+-- Select a server
+function DiscordCheatUI:SelectServer(name)
+    -- Reset previous selection
+    if self.selectedServer then
+        local prevServer = self:FindServerByName(self.selectedServer)
+        if prevServer and prevServer.instance then
+            prevServer.instance.BackgroundColor3 = COLORS.SIDEBAR
+        end
+    end
+    
+    -- Set new selection
+    self.selectedServer = name
+    local server = self:FindServerByName(name)
+    if server and server.instance then
+        server.instance.BackgroundColor3 = COLORS.BUTTON
+    end
+    
+    -- Clear channels and categories
+    for _, category in ipairs(self.categories) do
+        if category.instance then
+            category.instance:Destroy()
+        end
+    end
+    
+    for _, channel in ipairs(self.channels) do
+        if channel.instance then
+            channel.instance:Destroy()
+        end
+    end
+    
+    self.categories = {}
+    self.channels = {}
+    
+    -- Clear content
+    for _, control in pairs(self.controls) do
+        if control.instance then
+            control.instance:Destroy()
+        end
+    end
+    self.controls = {}
+    
+    -- Reset selected channel
+    self.selectedChannel = nil
+    self.channelNameLabel.Text = "Select a channel"
+    self.welcomeMessage.Visible = true
+    
+    -- Call server callback
+    local server = self:FindServerByName(name)
+    if server and server.callback then
+        server.callback()
+    end
+    
+    return self
+end
+
+-- Find a server by name
+function DiscordCheatUI:FindServerByName(name)
+    for _, server in ipairs(self.servers) do
+        if server.name == name then
+            return server
+        end
+    end
+    return nil
+end
+
+-- Initialize the UI with servers
+function DiscordCheatUI:Initialize()
+    -- Create server list
+    self.serverList = Instance.new("Frame")
+    self.serverList.Name = "ServerList"
+    self.serverList.Size = UDim2.new(0, 70, 1, 0)
+    self.serverList.BackgroundColor3 = COLORS.SIDEBAR
+    self.serverList.BorderSizePixel = 0
+    self.serverList.Parent = self.mainFrame
+    
+    -- Add corner radius to server list (only left corners)
+    local serverListCorner = Instance.new("UICorner")
+    serverListCorner.CornerRadius = UDim.new(0, 8)
+    serverListCorner.Parent = self.serverList
+    
+    -- Create a frame to cover the right corners of the server list
+    local coverFrame = Instance.new("Frame")
+    coverFrame.Size = UDim2.new(0.5, 0, 1, 0)
+    coverFrame.Position = UDim2.new(0.5, 0, 0, 0)
+    coverFrame.BackgroundColor3 = COLORS.SIDEBAR
+    coverFrame.BorderSizePixel = 0
+    coverFrame.ZIndex = 2
+    coverFrame.Parent = self.serverList
+    
+    -- Adjust sidebar position
+    self.sidebar.Size = UDim2.new(0.2, 0, 1, 0)
+    self.sidebar.Position = UDim2.new(0, 70, 0, 0)
+    
+    -- Adjust content area position
+    self.contentArea.Size = UDim2.new(0.8, -70, 1, 0)
+    self.contentArea.Position = UDim2.new(0.2, 70, 0, 0)
+    
+    self.servers = {}
+    
+    return self
+end
+
+-- Create a new Discord-style cheat menu with servers
+function DiscordCheatUI.newWithServers(player)
+    local self = DiscordCheatUI.new(player)
+    self:Initialize()
+    return self
+end
+
 return DiscordCheatUI
